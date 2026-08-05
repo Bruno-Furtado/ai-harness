@@ -1,4 +1,10 @@
 ---
+name: agent-name
+description: What this agent does and when to delegate to it.
+# Tool-specific keys are optional and ignored elsewhere.
+# OpenCode: mode, permission, model
+# Claude Code: tools, disallowedTools, model
+# See docs/authoring.md for the full table.
 mode: subagent
 permission:
   edit: deny
@@ -12,7 +18,7 @@ What this agent does.
 
 ## Non-goals
 
-What it must not do.
+What it must not do. State any restriction here as well, because frontmatter restrictions only apply in the tool that defines them.
 
 ## Method
 

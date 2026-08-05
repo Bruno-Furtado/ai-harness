@@ -5,8 +5,10 @@
 *.pem
 *.key
 *.p12
-*credentials*
-*secrets*
+credentials.json
+secrets.json
+*.credentials.json
+*.secrets.json
 node_modules/
 .venv/
 dist/

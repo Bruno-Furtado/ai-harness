@@ -10,7 +10,7 @@ Describe the problem and the change.
 
 ## Validation
 
-- [ ] `bash -n sync.sh hooks/*.sh` passes.
+- [ ] Every shell script passes `bash -n`, checked one file per call.
 - [ ] `./sync.sh --dry-run` was reviewed.
 - [ ] Relevant behavior was tested in the target tool.
 - [ ] A second model reviewed important design or security decisions.

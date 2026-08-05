@@ -2,8 +2,7 @@
 
 ## Purpose
 
-This repository contains portable configuration for coding agents. Keep the
-portable source separate from tool-specific adapters.
+This repository contains portable configuration for coding agents. Keep the portable source separate from tool-specific adapters.
 
 ## Language and writing
 
@@ -17,8 +16,11 @@ portable source separate from tool-specific adapters.
 - Skills live at `skills/<name>/SKILL.md` and follow agentskills.io.
 - Skill names use lowercase letters, numbers and single hyphens.
 - Every agent, command and skill must state scope, non-goals, acceptance criteria and validation steps.
+- Every agent, command and skill keeps `name` and `description` portable, and states any restriction in the body too, because frontmatter keys only apply in the tool that defines them.
+- Do not pin a model in a committed artifact. The model is a choice of whoever installs it.
 - Agents must not claim success without evidence.
 - Validators are read-only by default.
+- `docs/authoring.md` is the reference for every format.
 
 ## Safety
 
@@ -32,9 +34,11 @@ portable source separate from tool-specific adapters.
 Run these checks before opening a pull request:
 
 ```bash
-bash -n sync.sh hooks/*.sh
+for file in sync.sh hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
 ./sync.sh --dry-run
 ./sync.sh --check
 ```
+
+`bash -n` only parses its first argument, so always check one file per call.
 
 Review the diff and test any adapter in the tool it targets.

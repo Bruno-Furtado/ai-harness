@@ -1,19 +1,15 @@
 # Security
 
-This is a public repository. Never commit API keys, credentials, private
-project data, personal data or unredacted logs.
+This is a public repository. Never commit API keys, credentials, private project data, personal data or unredacted logs.
 
 ## Reporting a vulnerability
 
-Do not open a public issue for a security vulnerability. Use GitHub's private
-security advisory flow for this repository. Include reproduction steps, impact
-and a suggested fix when possible.
+Do not open a public issue. Use GitHub's [private security advisory](https://github.com/Bruno-Furtado/ai-harness/security/advisories/new) flow and include reproduction steps, impact and a suggested fix when possible.
 
-## Safe changes
+## Hooks
 
-- Treat hooks as executable code and review them before enabling them.
-- Keep examples free of real secrets.
-- Use environment variables for local credentials.
-- Prefer deny or ask permissions for tools that can edit files or run commands.
-- Test sync changes with `--dry-run` before applying them.
-- Review Codex hooks with `/hooks` before trusting them.
+A hook is executable code that runs on every matching tool call.
+
+- Review a hook before enabling it, in the tool that will run it.
+- Keep it small, make it fail closed and never log the payload.
+- Test sync changes with `./sync.sh --dry-run` before applying them.

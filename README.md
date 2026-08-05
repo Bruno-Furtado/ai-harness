@@ -1,23 +1,24 @@
-<div align="center">
+<p><small>🇧🇷 <a href="README.pt-BR.md">Versão em português</a></small></p>
 
-![cover](./assets/banner.svg)
+<p align="center">
+  <img src="./.github/assets/banner.svg" width="420" alt="ai-harness">
+</p>
 
-[![CI](https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=flat)](./LICENSE)
-![Agent Skills](https://img.shields.io/badge/standard-agentskills.io-3B82F6?style=flat)
-![AGENTS.md](https://img.shields.io/badge/standard-AGENTS.md-3B82F6?style=flat)
-![OpenCode](https://img.shields.io/badge/tool-OpenCode-111827?style=flat)
-![Claude Code](https://img.shields.io/badge/tool-Claude_Code-D97706?style=flat)
-![Codex](https://img.shields.io/badge/tool-Codex-059669?style=flat)
-![Hermes](https://img.shields.io/badge/tool-Hermes-7C3AED?style=flat)
+<h3 align="center">Your agents, skills, hooks, commands and rules in one place</h3>
 
-</div>
+<p align="center">
+  <a href="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml"><img src="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-22C55E?style=flat" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/standard-agentskills.io-3B82F6?style=flat" alt="Agent Skills">
+  <img src="https://img.shields.io/badge/standard-AGENTS.md-3B82F6?style=flat" alt="AGENTS.md">
+</p>
 
-<div align="center">
-Your agents, skills, hooks, commands and rules in one place.
-</div>
-
-[Portuguese version](README.pt-BR.md)
+<p align="center">
+  <img src="https://img.shields.io/badge/tool-OpenCode-111827?style=flat" alt="OpenCode">
+  <img src="https://img.shields.io/badge/tool-Claude_Code-D97706?style=flat" alt="Claude Code">
+  <img src="https://img.shields.io/badge/tool-Codex-059669?style=flat" alt="Codex">
+  <img src="https://img.shields.io/badge/tool-Hermes-7C3AED?style=flat" alt="Hermes">
+</p>
 
 ## What it is
 
@@ -27,22 +28,14 @@ The goal is simple: write once, use the same work across OpenCode, Claude Code, 
 
 ## Install
 
-Install skills from this repository with the open skills CLI:
-
-```bash
-npx skills add Bruno-Furtado/ai-harness
-```
-
-This repository starts with templates and no published skill. The command becomes useful as soon as a skill is added under `skills/<name>/SKILL.md`.
-
-To use the complete collection locally:
-
 ```bash
 git clone https://github.com/Bruno-Furtado/ai-harness.git
 cd ai-harness
 ./sync.sh --dry-run
 ./sync.sh
 ```
+
+`sync.sh` creates symlinks from this repository into the configuration directory of each supported tool. It never replaces an existing real file, and `--dry-run` prints every change before anything is applied. Use `./sync.sh --check` to audit the links and `./sync.sh --unlink` to remove only the links that point back here.
 
 ## Tool support
 
@@ -52,7 +45,7 @@ cd ai-harness
 | Claude Code | Yes | Yes | Yes | Yes | Yes |
 | Codex | Yes | Partial | Partial | Yes | Yes |
 | Hermes | Yes | No | No | Yes | No |
-| Other tools | Via `npx skills` | Depends on tool | Depends on tool | `AGENTS.md` | Depends on tool |
+| Other tools | Agent Skills | Depends on tool | Depends on tool | `AGENTS.md` | Depends on tool |
 
 ## Contents
 
@@ -64,8 +57,13 @@ cd ai-harness
 | `hooks/` | Small security hooks shared by adapters |
 | `rules/` | Personal global rules |
 | `adapters/` | Tool-specific integration examples |
+| `docs/authoring.md` | How to create a skill, agent, command, hook or rule |
 | `docs/templates/` | Templates with acceptance criteria and validation sections |
 | `sync.sh` | Safe, idempotent symlink setup for the owner |
+
+## Creating an artifact
+
+Read [docs/authoring.md](docs/authoring.md). It covers where each artifact lives, which frontmatter fields are portable, which ones belong to a single tool, and how to validate the result before committing.
 
 ## Design rules
 
@@ -87,8 +85,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). Changes go through pull requests. The `
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+This project is licensed under the **MIT License**. See the [`LICENSE`](LICENSE) file for the full terms.
 
-<div align="center">
-  <sub>Made with ♥ in Curitiba 🇧🇷 🌲 ☔️</sub>
-</div>
+---
+
+<p align="center">Made with ❤️ in Curitiba 🌳 ☔️</p>
