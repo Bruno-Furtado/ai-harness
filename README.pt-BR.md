@@ -1,10 +1,10 @@
 <p><small>🇺🇸 <a href="README.md">English version</a></small></p>
 
 <p align="center">
-  <img src="./.github/assets/banner.svg" width="420" alt="ai-harness">
+  <img src="./.github/assets/banner.svg" alt="ai-harness">
 </p>
 
-<h3 align="center">Seus agents, skills, hooks, commands e rules em um só lugar</h3>
+<h3 align="center">Agents, skills, commands, hooks e rules agnósticos de ferramenta, em um só lugar</h3>
 
 <p align="center">
   <a href="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml"><img src="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -22,70 +22,52 @@
 
 ## O que é
 
-O `ai-harness` é uma coleção pública e pequena de configurações reutilizáveis para agentes. As partes portáveis usam padrões abertos. A integração específica de cada ferramenta fica nos adapters.
-
-A ideia é simples: escrever uma vez e usar o mesmo trabalho no OpenCode, Claude Code, Codex, Hermes e outras ferramentas.
+Escreva um agent, uma skill, um command, um hook ou uma rule uma vez e use em todas as ferramentas que você usa. A parte portável segue padrões abertos, Agent Skills e `AGENTS.md`, e a integração que cada ferramenta exige fica em `adapters/`, então nada aqui depende de um fornecedor específico.
 
 ## Instalação
 
 ```bash
 git clone https://github.com/Bruno-Furtado/ai-harness.git
 cd ai-harness
-./sync.sh --dry-run
-./sync.sh
-```
 
-O `sync.sh` cria symlinks deste repositório para o diretório de configuração de cada ferramenta suportada. Ele nunca substitui um arquivo real existente, e o `--dry-run` mostra todas as mudanças antes de aplicar qualquer coisa. Use `./sync.sh --check` para auditar os links e `./sync.sh --unlink` para remover apenas os links que apontam para cá.
+./sync.sh --dry-run   # mostra todas as mudanças, sem escrever nada
+./sync.sh             # cria os links dos artefatos em cada ferramenta
+./sync.sh --check     # audita os links depois
+./sync.sh --unlink    # remove apenas os links que apontam para cá
+```
 
 ## Suporte às ferramentas
 
-| Ferramenta | Skills | Agents | Commands | Rules | Hooks |
-| --- | :---: | :---: | :---: | :---: | :---: |
-| OpenCode | Sim | Sim | Sim | Sim | Adapter |
-| Claude Code | Sim | Sim | Sim | Sim | Sim |
-| Codex | Sim | Parcial | Parcial | Sim | Sim |
-| Hermes | Sim | Não | Não | Sim | Não |
-| Outras | Agent Skills | Depende | Depende | `AGENTS.md` | Depende |
+| Ferramenta | Skills | Agents | Commands | Rules | Hooks | Observação |
+| --- | :---: | :---: | :---: | :---: | :---: | --- |
+| OpenCode | Sim | Sim | Sim | Sim | Adapter | Hooks chegam por plugin |
+| Claude Code | Sim | Sim | Sim | Sim | Sim | |
+| Codex | Sim | Parcial | Parcial | Sim | Sim | Não tem formato de subagent, e os prompts não documentam frontmatter, então só o corpo é aproveitado |
+| Hermes | Sim | Não | Não | Sim | Não | Consome apenas skills e regras de workspace |
+
+Qualquer outra ferramenta que leia Agent Skills e `AGENTS.md` recebe as skills e as rules. O resto depende do que essa ferramenta suporta.
 
 ## Conteúdo
 
-| Caminho | Finalidade |
+| Caminho | O que fica ali |
 | --- | --- |
-| `agents/` | Exemplos de reviewer somente leitura e validador entre modelos |
-| `skills/` | Skills instaláveis no padrão agentskills.io |
-| `commands/` | Prompts reutilizáveis para comandos |
-| `hooks/` | Hooks pequenos de segurança compartilhados pelos adapters |
-| `rules/` | Regras pessoais globais |
-| `adapters/` | Exemplos de integração por ferramenta |
-| `docs/authoring.md` | Como criar uma skill, agent, command, hook ou rule |
-| `docs/templates/` | Templates com critérios de aceite e validação |
-| `sync.sh` | Configuração segura e idempotente por symlink |
-
-## Criando um artefato
-
-Leia [docs/authoring.md](docs/authoring.md). O guia cobre onde cada artefato fica, quais campos de frontmatter são portáveis, quais pertencem a uma ferramenta só e como validar o resultado antes de commitar.
+| `agents/` | Agents, no formato que cada ferramenta lê |
+| `skills/` | Skills no layout aberto do Agent Skills |
+| `commands/` | Prompts que cada ferramenta expõe como comando |
+| `hooks/` | Scripts de guarda compartilhados pelos adapters |
+| `rules/` | Regras globais, linkadas como `AGENTS.md` |
+| `adapters/` | O que cada ferramenta precisa para integrar o resto |
+| `docs/` | Como criar um artefato e como as peças se encaixam |
+| `CONTRIBUTING.md` | Como propor uma mudança e como as releases são publicadas |
+| `sync.sh` | Cria os links de tudo nas ferramentas que você usa |
 
 ## Regras de trabalho
 
-- Cada artefato deve ter uma finalidade clara.
-- Declare as premissas antes de agir.
-- Defina os critérios de aceite antes da implementação.
-- Valide o resultado antes de informar que terminou.
-- Use um segundo modelo em planos e mudanças importantes.
-- Nunca versione credenciais, dados privados ou tokens.
-- Prefira a menor mudança que resolve o problema.
+- Uma finalidade por artefato. `name` e `description` continuam portáveis, e qualquer restrição também é declarada no corpo.
+- Critérios de aceite antes da implementação, evidência antes de dizer que terminou.
+- Sem credenciais, sem modelo fixo, sem caminho de máquina.
 
-## Segurança
-
-O repositório é público. Não adicione secrets ou contexto privado de projetos. A CI verifica secrets vazados e problemas nos scripts shell. Leia [SECURITY.md](SECURITY.md) antes de adicionar hooks ou integrações.
-
-## Contribuição
-
-Leia [CONTRIBUTING.md](CONTRIBUTING.md). Mudanças passam por pull requests. A branch `main` é protegida.
-
-## Licença
-
-Este projeto está licenciado sob a **MIT License**. Veja o arquivo [`LICENSE`](LICENSE) para mais detalhes.
+O motivo de cada uma está em [docs/authoring.md](docs/authoring.md).
 
 ---
 

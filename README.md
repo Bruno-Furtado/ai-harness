@@ -1,10 +1,10 @@
 <p><small>🇧🇷 <a href="README.pt-BR.md">Versão em português</a></small></p>
 
 <p align="center">
-  <img src="./.github/assets/banner.svg" width="420" alt="ai-harness">
+  <img src="./.github/assets/banner.svg" alt="ai-harness">
 </p>
 
-<h3 align="center">Your agents, skills, hooks, commands and rules in one place</h3>
+<h3 align="center">Tool agnostic agents, skills, commands, hooks and rules, in one place</h3>
 
 <p align="center">
   <a href="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml"><img src="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -22,70 +22,52 @@
 
 ## What it is
 
-`ai-harness` is a small, public collection of reusable agent configuration. It keeps the portable parts in open formats and leaves tool-specific integration in adapters.
-
-The goal is simple: write once, use the same work across OpenCode, Claude Code, Codex, Hermes and other tools.
+Write an agent, a skill, a command, a hook or a rule once and use it in every tool you work with. The portable part follows open standards, Agent Skills and `AGENTS.md`, while the wiring each tool needs stays in `adapters/`, so nothing here is tied to a single vendor.
 
 ## Install
 
 ```bash
 git clone https://github.com/Bruno-Furtado/ai-harness.git
 cd ai-harness
-./sync.sh --dry-run
-./sync.sh
-```
 
-`sync.sh` creates symlinks from this repository into the configuration directory of each supported tool. It never replaces an existing real file, and `--dry-run` prints every change before anything is applied. Use `./sync.sh --check` to audit the links and `./sync.sh --unlink` to remove only the links that point back here.
+./sync.sh --dry-run   # preview every change, nothing is written
+./sync.sh             # link the artifacts into each tool
+./sync.sh --check     # audit the links later
+./sync.sh --unlink    # remove only the links that point back here
+```
 
 ## Tool support
 
-| Tool | Skills | Agents | Commands | Rules | Hooks |
-| --- | :---: | :---: | :---: | :---: | :---: |
-| OpenCode | Yes | Yes | Yes | Yes | Adapter |
-| Claude Code | Yes | Yes | Yes | Yes | Yes |
-| Codex | Yes | Partial | Partial | Yes | Yes |
-| Hermes | Yes | No | No | Yes | No |
-| Other tools | Agent Skills | Depends on tool | Depends on tool | `AGENTS.md` | Depends on tool |
+| Tool | Skills | Agents | Commands | Rules | Hooks | Notes |
+| --- | :---: | :---: | :---: | :---: | :---: | --- |
+| OpenCode | Yes | Yes | Yes | Yes | Adapter | Hooks arrive through a plugin |
+| Claude Code | Yes | Yes | Yes | Yes | Yes | |
+| Codex | Yes | Partial | Partial | Yes | Yes | No subagent format, and prompts document no frontmatter, so only the body carries over |
+| Hermes | Yes | No | No | Yes | No | Consumes skills and workspace rules only |
+
+Any other tool that reads Agent Skills and `AGENTS.md` gets the skills and the rules. The rest depends on what that tool supports.
 
 ## Contents
 
-| Path | Purpose |
+| Path | What lives there |
 | --- | --- |
-| `agents/` | Read-only reviewer and cross-model validator examples |
-| `skills/` | Installable skills following agentskills.io |
-| `commands/` | Reusable command prompts |
-| `hooks/` | Small security hooks shared by adapters |
-| `rules/` | Personal global rules |
-| `adapters/` | Tool-specific integration examples |
-| `docs/authoring.md` | How to create a skill, agent, command, hook or rule |
-| `docs/templates/` | Templates with acceptance criteria and validation sections |
-| `sync.sh` | Safe, idempotent symlink setup for the owner |
-
-## Creating an artifact
-
-Read [docs/authoring.md](docs/authoring.md). It covers where each artifact lives, which frontmatter fields are portable, which ones belong to a single tool, and how to validate the result before committing.
+| `agents/` | Agents, in the format each tool reads |
+| `skills/` | Skills in the open Agent Skills layout |
+| `commands/` | Prompts that each tool exposes as a command |
+| `hooks/` | Guard scripts the adapters share |
+| `rules/` | Global rules, linked as `AGENTS.md` |
+| `adapters/` | What each tool needs to wire the rest up |
+| `docs/` | How to author an artifact and how the pieces fit together |
+| `CONTRIBUTING.md` | How to propose a change and how releases are cut |
+| `sync.sh` | Links everything into the tools you use |
 
 ## Design rules
 
-- Keep each artifact focused on one job.
-- State assumptions before acting.
-- Define acceptance criteria before implementation.
-- Verify the result before reporting success.
-- Use a second model for plans and important changes.
-- Do not commit credentials, private data or provider tokens.
-- Prefer the smallest change that solves the problem.
+- One job per artifact. `name` and `description` stay portable, and any restriction is stated in the body too.
+- Acceptance criteria before the implementation, evidence before calling it done.
+- No credentials, no pinned models, no machine specific paths.
 
-## Security
-
-The repository is public. Do not add secrets or private project context. CI checks for leaked secrets and shell issues. Read [SECURITY.md](SECURITY.md) before adding hooks or integrations.
-
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md). Changes go through pull requests. The `main` branch is protected.
-
-## License
-
-This project is licensed under the **MIT License**. See the [`LICENSE`](LICENSE) file for the full terms.
+The reasoning behind each one is in [docs/authoring.md](docs/authoring.md).
 
 ---
 
