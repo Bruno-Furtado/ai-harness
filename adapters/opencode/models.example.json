@@ -10,7 +10,12 @@
         "opencode-go/gpt-5.6-luna"
       ],
       "free": [
-        "opencode/deepseek-v4-flash-free"
+        "opencode/deepseek-v4-flash-free",
+        "opencode/mimo-v2.5-free",
+        "opencode/north-mini-code-free",
+        "opencode/ling-3.0-flash-free",
+        "opencode/longcat-2.0-free",
+        "opencode/laguna-s-2.1-free"
       ]
     },
     "light": {
@@ -19,7 +24,9 @@
         "opencode-go/deepseek-v4-pro"
       ],
       "free": [
-        "opencode/deepseek-v4-flash-free"
+        "opencode/deepseek-v4-flash-free",
+        "opencode/mimo-v2.5-free",
+        "opencode/north-mini-code-free"
       ]
     }
   },
