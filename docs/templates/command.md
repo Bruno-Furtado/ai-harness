@@ -1,4 +1,9 @@
 ---
+description: One line stating what the command does.
+# Tool-specific keys are optional and ignored elsewhere.
+# OpenCode: agent, subtask, model
+# Claude Code: argument-hint, allowed-tools, model
+# See docs/authoring.md for the full table.
 ---
 
 Perform the requested workflow for `$ARGUMENTS`.

@@ -15,18 +15,26 @@ jobs:
 
       - name: Check shell syntax
         shell: bash
-        run: bash -n sync.sh hooks/*.sh docs/templates/hook.sh
+        run: |
+          set -euo pipefail
+          # bash -n only parses its first argument, so check one file per call.
+          for file in sync.sh hooks/*.sh docs/templates/hook.sh; do
+            test -f "$file"
+            bash -n "$file"
+          done
 
       - name: Validate frontmatter
         shell: bash
         run: |
           set -euo pipefail
-          for file in agents/*.md commands/*.md docs/templates/SKILL.md; do
+          for file in agents/*.md commands/*.md docs/templates/*.md; do
             test "$(awk 'NR == 1 { print; exit }' "$file")" = "---"
             test "$(awk 'BEGIN { found = 0 } NR > 1 && $0 == "---" { found = 1; exit } END { print found }' "$file")" = "1"
             grep -Eq '^description: .+' "$file"
           done
-          grep -Eq '^name: [a-z0-9]+(-[a-z0-9]+)*$' docs/templates/SKILL.md
+          for file in agents/*.md docs/templates/SKILL.md docs/templates/agent.md; do
+            grep -Eq '^name: [a-z0-9]+(-[a-z0-9]+)*$' "$file"
+          done
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
