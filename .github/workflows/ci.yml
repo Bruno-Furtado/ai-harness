@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # gitleaks scans the commit range of the push or pull request, so it
+          # needs the full history. The default shallow clone breaks it.
+          fetch-depth: 0
 
       - name: Check shell syntax
         shell: bash
