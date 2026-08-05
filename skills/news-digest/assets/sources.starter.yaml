@@ -1,0 +1,27 @@
+# Format reference for the user's private sources.yaml.
+#
+# This file is an EXAMPLE with generic sections. The guided setup replaces it
+# with the user's own topics and feeds in the state home; this starter stays
+# untouched inside the skill.
+#
+# Schema:
+#   sections: list of { name, feeds }
+#   feeds:    list of { name, url, tier }
+#
+# tier: 1 = primary or official source (vendor blogs, papers, release notes)
+#       2 = major outlet with editorial process
+#       3 = niche, curated source or aggregator
+sections:
+  - name: world
+    feeds:
+      - name: BBC World
+        url: http://feeds.bbci.co.uk/news/world/rss.xml
+        tier: 2
+  - name: technology
+    feeds:
+      - name: Hacker News
+        url: https://news.ycombinator.com/rss
+        tier: 3
+      - name: Ars Technica
+        url: https://feeds.arstechnica.com/arstechnica/index
+        tier: 2
