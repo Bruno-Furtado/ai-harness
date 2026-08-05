@@ -19,6 +19,25 @@ Read [docs/authoring.md](docs/authoring.md) for the format of each artifact and 
 
 Pull requests must explain the problem, the proposed change, acceptance criteria and verification performed. Do not merge directly to `main` except for an emergency correction by the repository owner.
 
+Every pull request must carry an assignee, at least one label and the milestone of the version it targets. The `Pull request` workflow fails when one of them is missing, so this is checked rather than assumed. Labels are not decoration here: release notes are grouped by label through `.github/release.yml`, and an unlabeled change lands under "Other changes". Create the label or the milestone that does not exist yet instead of leaving the field empty.
+
+## Releases
+
+Versions follow [Semantic Versioning](https://semver.org). For a configuration repository that means:
+
+- **Patch** for a fix that changes no format and breaks no existing install.
+- **Minor** for a new skill, agent, command, hook or rule, and for a new supported tool.
+- **Major** for a change that breaks an existing install, such as moving where an artifact lives or renaming something `sync.sh` links.
+
+A release is cut when the milestone is done. Pushing the tag is the only manual step, and every `v*` tag becomes a release:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The `Release` workflow rejects a tag that is not semantic versioning, skips a release that already exists, treats `v1.0.0-rc.1` and similar as a prerelease, and generates the notes from the merged pull request labels. Do not publish a release by hand, or the notes stop matching the labels.
+
 Every pull request carries an assignee, the labels that describe it and the milestone of the version it targets. Labels are not decoration here: release notes are grouped by label, so an unlabeled pull request lands under "Other changes".
 
 ## Releases

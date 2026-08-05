@@ -42,3 +42,28 @@ for file in sync.sh hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
 `bash -n` only parses its first argument, so always check one file per call.
 
 Review the diff and test any adapter in the tool it targets.
+
+## Pull requests
+
+Every pull request, opened by a person or by an agent, must carry:
+
+- an assignee, so it has an owner;
+- at least one label, because release notes are grouped by label;
+- the milestone of the version it targets.
+
+The `Pull request` workflow fails when any of the three is missing. Create the label or the milestone that does not exist yet instead of leaving the field empty.
+
+Use the existing labels first: `bug`, `enhancement`, `documentation`, `ci`. A pull request that mixes a fix and documentation carries both.
+
+## Releases
+
+Versions follow semantic versioning. Patch for a fix that breaks no install, minor for a new artifact or a newly supported tool, major for anything that breaks an existing install, such as moving where an artifact lives or renaming something `sync.sh` links.
+
+Every `v*` tag becomes a release. Pushing the tag is the only manual step:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The `Release` workflow rejects a tag that is not semantic versioning, skips a release that already exists, marks a tag with a suffix as a prerelease, and generates the notes from the merged pull request labels. Never publish a release by hand: push the tag and let the workflow do it, so the notes always match the labels.
