@@ -18,3 +18,20 @@ Read [docs/authoring.md](docs/authoring.md) for the format of each artifact and 
 ## Pull requests
 
 Pull requests must explain the problem, the proposed change, acceptance criteria and verification performed. Do not merge directly to `main` except for an emergency correction by the repository owner.
+
+Every pull request carries an assignee, the labels that describe it and the milestone of the version it targets. Labels are not decoration here: release notes are grouped by label, so an unlabeled pull request lands under "Other changes".
+
+## Releases
+
+Versions follow [Semantic Versioning](https://semver.org). For a configuration repository that means:
+
+- **Patch** for a fix that changes no format and breaks no existing install.
+- **Minor** for a new skill, agent, command, hook or rule, and for a new supported tool.
+- **Major** for a change that breaks an existing install, such as moving where an artifact lives or renaming something `sync.sh` links.
+
+A release is cut by hand when the milestone is done. Push the tag and the `Release` workflow publishes the notes, generated from the merged pull request labels according to `.github/release.yml`:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```

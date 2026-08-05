@@ -1,0 +1,22 @@
+changelog:
+  exclude:
+    labels:
+      - duplicate
+      - invalid
+      - wontfix
+  categories:
+    - title: Features
+      labels:
+        - enhancement
+    - title: Fixes
+      labels:
+        - bug
+    - title: Documentation
+      labels:
+        - documentation
+    - title: CI and tooling
+      labels:
+        - ci
+    - title: Other changes
+      labels:
+        - "*"
