@@ -1,0 +1,17 @@
+{
+  "description": "ai-harness security hooks",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /absolute/path/to/ai-harness/hooks/protect-secrets.sh",
+            "statusMessage": "Checking protected files"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /absolute/path/to/ai-harness/hooks/protect-secrets.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
