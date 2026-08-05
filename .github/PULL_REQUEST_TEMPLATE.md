@@ -19,3 +19,9 @@ Describe the problem and the change.
 
 - [ ] No credentials, private data or machine-specific secrets are included.
 - [ ] Hook and adapter changes were reviewed for unsafe execution.
+
+## Triage
+
+- [ ] Assignee set.
+- [ ] Labels set, since release notes are grouped by label.
+- [ ] Milestone set to the version this targets.

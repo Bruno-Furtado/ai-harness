@@ -1,0 +1,63 @@
+name: Pull request
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+      - ready_for_review
+      - assigned
+      - unassigned
+      - labeled
+      - unlabeled
+      - milestoned
+      - demilestoned
+
+permissions:
+  contents: read
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require an assignee, a label and a milestone
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # GITHUB_EVENT_PATH is set by the runner. The github.event_path
+          # expression is not, and expands to an empty string.
+          test -f "$GITHUB_EVENT_PATH"
+
+          assignees=$(jq '.pull_request.assignees | length' "$GITHUB_EVENT_PATH")
+          labels=$(jq -r '[.pull_request.labels[].name] | join(", ")' "$GITHUB_EVENT_PATH")
+          label_count=$(jq '.pull_request.labels | length' "$GITHUB_EVENT_PATH")
+          milestone=$(jq -r '.pull_request.milestone.title // ""' "$GITHUB_EVENT_PATH")
+
+          missing=0
+
+          if [[ "$assignees" -eq 0 ]]; then
+            echo "::error::This pull request has no assignee. Someone has to own it."
+            missing=1
+          fi
+
+          if [[ "$label_count" -eq 0 ]]; then
+            echo "::error::This pull request has no label. Release notes are grouped by label, so an unlabeled change lands under Other changes."
+            missing=1
+          fi
+
+          if [[ -z "$milestone" ]]; then
+            echo "::error::This pull request has no milestone. Set the version it targets."
+            missing=1
+          fi
+
+          if [[ "$missing" -eq 1 ]]; then
+            echo "See CONTRIBUTING.md for the triage rules."
+            exit 1
+          fi
+
+          echo "assignees: $assignees"
+          echo "labels: $labels"
+          echo "milestone: $milestone"
