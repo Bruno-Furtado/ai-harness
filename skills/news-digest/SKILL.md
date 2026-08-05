@@ -28,9 +28,13 @@ All mutable state lives outside this skill directory, in the state home:
 
 - `$NEWS_DIGEST_HOME` when set, otherwise `~/.local/share/news-digest`.
 
-Never write state inside the skill directory: it is usually a symlink into a repository, and this rule holds regardless of which tool loads the skill. The scripts in `scripts/` already follow it; follow it for manual edits too.
+Never write files inside the skill directory: it is usually a symlink into a repository, and this rule holds regardless of which tool loads the skill. The scripts in `scripts/` already follow it; follow it for manual edits too.
 
 State files: `sources.yaml` (sections and feeds), `config.yaml` (run options), `seen.json` (dedupe memory), `feedback.jsonl` (marked items), `profile.md` (learned taste), `digests/YYYY-MM-DD.md` (archive).
+
+## Running the scripts
+
+Run the scripts from the skill directory (the folder that contains `SKILL.md`) as the working directory, for example `python3 scripts/fetch_feeds.py`. If the tool cannot set the working directory, call them by their absolute path `python3 <skill-dir>/scripts/fetch_feeds.py`. The scripts resolve the state home and their assets from where they live, so they are otherwise independent of the working directory.
 
 ## Inputs
 
