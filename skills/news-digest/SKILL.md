@@ -34,7 +34,9 @@ State files: `sources.yaml` (sections and feeds), `config.yaml` (run options), `
 
 ## Running the scripts
 
-Run the scripts from the skill directory (the folder that contains `SKILL.md`) as the working directory, for example `python3 scripts/fetch_feeds.py`. If the tool cannot set the working directory, call them by their absolute path `python3 <skill-dir>/scripts/fetch_feeds.py`. The scripts resolve the state home and their assets from where they live, so they are otherwise independent of the working directory.
+Run the scripts from the skill directory (the folder that contains `SKILL.md`) as the working directory, for example `python3 scripts/fetch_feeds.py`. If the tool cannot set the working directory, call them by absolute path `python3 <skill-dir>/scripts/fetch_feeds.py`. The scripts resolve the state home and their assets from where they live, so they are otherwise independent of the working directory.
+
+Locate the skill directory by checking, in order, whichever of these exists and contains `SKILL.md`: `~/.hermes/skills/news-digest`, `~/.config/opencode/skills/news-digest`, `~/.claude/skills/news-digest`, `~/.agents/skills/news-digest`. Do not scan the whole filesystem to find it; use one of the paths above.
 
 ## Inputs
 
