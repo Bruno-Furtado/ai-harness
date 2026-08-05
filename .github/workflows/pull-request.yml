@@ -24,15 +24,17 @@ jobs:
     steps:
       - name: Require an assignee, a label and a milestone
         shell: bash
-        env:
-          EVENT_PATH: ${{ github.event_path }}
         run: |
           set -euo pipefail
 
-          assignees=$(jq '.pull_request.assignees | length' "$EVENT_PATH")
-          labels=$(jq '[.pull_request.labels[].name] | join(", ")' "$EVENT_PATH")
-          label_count=$(jq '.pull_request.labels | length' "$EVENT_PATH")
-          milestone=$(jq -r '.pull_request.milestone.title // ""' "$EVENT_PATH")
+          # GITHUB_EVENT_PATH is set by the runner. The github.event_path
+          # expression is not, and expands to an empty string.
+          test -f "$GITHUB_EVENT_PATH"
+
+          assignees=$(jq '.pull_request.assignees | length' "$GITHUB_EVENT_PATH")
+          labels=$(jq -r '[.pull_request.labels[].name] | join(", ")' "$GITHUB_EVENT_PATH")
+          label_count=$(jq '.pull_request.labels | length' "$GITHUB_EVENT_PATH")
+          milestone=$(jq -r '.pull_request.milestone.title // ""' "$GITHUB_EVENT_PATH")
 
           missing=0
 
