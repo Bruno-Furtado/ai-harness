@@ -38,6 +38,20 @@ Run the scripts from the skill directory (the folder that contains `SKILL.md`) a
 
 Locate the skill directory by checking, in order, whichever of these exists and contains `SKILL.md`: `~/.hermes/skills/news-digest`, `~/.config/opencode/skills/news-digest`, `~/.claude/skills/news-digest`, `~/.agents/skills/news-digest`. Do not scan the whole filesystem to find it; use one of the paths above.
 
+## Delegating to OpenCode
+
+When a tool such as Hermes loads this skill and is not itself OpenCode, delegate the whole run to `opencode-model-run` instead of doing the work directly. Do this as your first action: run the delegation command, wait for its stdout, and treat that stdout as the answer. Deliver the answer to the user (for a scheduled job, as the job's result). Do not redo the curation yourself.
+
+Run it with the `reason` tier for a full digest:
+
+```
+opencode-model-run --tier reason "<full task prompt for the news-digest skill>"
+```
+
+If the command is not on the PATH of the runner, call it by its absolute path `$HOME/.local/bin/opencode-model-run`. It picks the best available model for the tier, falls back to the next or to a free model when the paid provider reports exhausted credits, and always prints the completed response on stdout plus a one-line `[model-router]` note on stderr.
+
+Never delegate when this skill is already running inside OpenCode: here the scripts run directly (see above), calling `opencode-model-run` from inside OpenCode would recurse.
+
 ## Inputs
 
 - First run: ask the user which topics (sections) and sources they want. Run `state.py init`, then write their `sources.yaml` using `assets/sources.starter.yaml` as the format reference. Confirm every feed with `fetch_feeds.py --check` and remove or replace failures.

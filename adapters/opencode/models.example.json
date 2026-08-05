@@ -1,0 +1,38 @@
+{
+  "tiers": {
+    "reason": {
+      "primary": [
+        "opencode-go/deepseek-v4-pro",
+        "opencode-go/hy3",
+        "opencode-go/glm-5.2",
+        "opencode-go/qwen3.8-max",
+        "opencode-go/kimi-k3",
+        "opencode-go/gpt-5.6-luna"
+      ],
+      "free": [
+        "opencode/deepseek-v4-flash-free"
+      ]
+    },
+    "light": {
+      "primary": [
+        "opencode-go/hy3",
+        "opencode-go/deepseek-v4-pro"
+      ],
+      "free": [
+        "opencode/deepseek-v4-flash-free"
+      ]
+    }
+  },
+  "timeout_seconds": {
+    "reason": 420,
+    "light": 240
+  },
+  "credit_signals": [
+    "AI_APICallError",
+    "usage limit reached",
+    "insufficient balance",
+    "insufficient credits",
+    "quota",
+    "402"
+  ]
+}
