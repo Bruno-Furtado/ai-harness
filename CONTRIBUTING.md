@@ -13,42 +13,31 @@ Contributions are welcome through pull requests.
 
 ## Adding an artifact
 
-Read [docs/authoring.md](docs/authoring.md) for the format of each artifact and start from the matching file in `docs/templates/`. Keep skills under `skills/<name>/SKILL.md`, document tool-specific behavior in `adapters/`, and do not add provider tokens, pinned models or machine-specific paths.
+| Artifact | Where it goes | Start from |
+| --- | --- | --- |
+| Skill | `skills/<name>/SKILL.md`, folder name equal to `name` | [`docs/templates/SKILL.md`](docs/templates/SKILL.md) |
+| Agent | `agents/<name>.md` | [`docs/templates/agent.md`](docs/templates/agent.md) |
+| Command | `commands/<name>.md`, file name becomes the command | [`docs/templates/command.md`](docs/templates/command.md) |
+| Hook | `hooks/<name>.sh` | [`docs/templates/hook.sh`](docs/templates/hook.sh) |
+| Rule | `rules/global.md` | the file itself |
+
+Tool-specific behavior goes in `adapters/`. Never add provider tokens, pinned models or machine-specific paths. [docs/authoring.md](docs/authoring.md) has the fields each format accepts and how to validate the result.
 
 ## Pull requests
 
 Pull requests must explain the problem, the proposed change, acceptance criteria and verification performed. Do not merge directly to `main` except for an emergency correction by the repository owner.
 
-Every pull request must carry an assignee, at least one label and the milestone of the version it targets. The `Pull request` workflow fails when one of them is missing, so this is checked rather than assumed. Labels are not decoration here: release notes are grouped by label through `.github/release.yml`, and an unlabeled change lands under "Other changes". Create the label or the milestone that does not exist yet instead of leaving the field empty.
+Every pull request must carry an assignee, at least one label and the milestone of the version it targets. The `Pull request` workflow fails when one of them is missing. Labels are not decoration here: release notes are grouped by label through `.github/release.yml`, and an unlabeled change lands under "Other changes".
 
 ## Releases
 
-Versions follow [Semantic Versioning](https://semver.org). For a configuration repository that means:
+Versions follow [Semantic Versioning](https://semver.org):
 
-- **Patch** for a fix that changes no format and breaks no existing install.
-- **Minor** for a new skill, agent, command, hook or rule, and for a new supported tool.
-- **Major** for a change that breaks an existing install, such as moving where an artifact lives or renaming something `sync.sh` links.
+- **Patch** for a fix that changes no format.
+- **Minor** for a new artifact or a newly supported tool.
+- **Major** for a change that breaks an existing install.
 
-A release is cut when the milestone is done. Pushing the tag is the only manual step, and every `v*` tag becomes a release:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-The `Release` workflow rejects a tag that is not semantic versioning, skips a release that already exists, treats `v1.0.0-rc.1` and similar as a prerelease, and generates the notes from the merged pull request labels. Do not publish a release by hand, or the notes stop matching the labels.
-
-Every pull request carries an assignee, the labels that describe it and the milestone of the version it targets. Labels are not decoration here: release notes are grouped by label, so an unlabeled pull request lands under "Other changes".
-
-## Releases
-
-Versions follow [Semantic Versioning](https://semver.org). For a configuration repository that means:
-
-- **Patch** for a fix that changes no format and breaks no existing install.
-- **Minor** for a new skill, agent, command, hook or rule, and for a new supported tool.
-- **Major** for a change that breaks an existing install, such as moving where an artifact lives or renaming something `sync.sh` links.
-
-A release is cut by hand when the milestone is done. Push the tag and the `Release` workflow publishes the notes, generated from the merged pull request labels according to `.github/release.yml`:
+Push the tag when the milestone is done, and the `Release` workflow publishes the notes:
 
 ```bash
 git tag v0.1.0

@@ -13,6 +13,16 @@ Agents, commands and hooks have no open standard. Each tool defines its own fron
 
 Prefer a skill whenever the content is instructions or a procedure. Reach for an agent or a command only when you need the tool's own delegation or menu.
 
+## Design rules
+
+The three lines in the README expand into this.
+
+**The artifact.** One job per artifact, because an artifact that does three things is loaded for the wrong reason two times out of three. `name` and `description` carry the meaning, since they are the only fields every tool reads. A restriction written only in frontmatter holds in one tool and vanishes in the others, so state it in the body as well. Prefer the smallest change that solves the problem.
+
+**The work.** Define acceptance criteria before the implementation, or the criteria end up describing whatever was built. Verify before reporting success, and say which check was run. Use a second model for plans, security-sensitive work and broad changes, on a model different from the one that produced the proposal.
+
+**Safety.** No credentials, private data or provider tokens, ever, in a public repository. No pinned model, because the model depends on what the person installing has access to. No machine specific path, because the artifact is installed elsewhere. Treat a hook as executable code that runs on every matching tool call.
+
 ## Skills
 
 Location: `skills/<name>/SKILL.md`. The folder name is the skill name.
