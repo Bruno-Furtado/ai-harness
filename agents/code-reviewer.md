@@ -1,4 +1,5 @@
 ---
+description: Reviews a change without editing files. Reports risks, regressions and missing tests.
 mode: subagent
 permission:
   edit: deny

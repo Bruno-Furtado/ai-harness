@@ -1,4 +1,5 @@
 ---
+description: Independently validates a plan or important change using a second model.
 mode: subagent
 model: opencode-go/gpt-5.6-luna
 permission:

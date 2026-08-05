@@ -1,4 +1,5 @@
 ---
+description: Send a plan or change to the independent validator for a second opinion.
 agent: validator
 subtask: true
 ---

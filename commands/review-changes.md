@@ -1,4 +1,5 @@
 ---
+description: Review the current git changes for correctness, security and missing tests.
 agent: code-reviewer
 subtask: true
 ---

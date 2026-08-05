@@ -1,5 +1,6 @@
 ---
 name: skill-name
+description: Describe exactly when this skill should and should not be used.
 license: MIT
 ---
 
