@@ -45,7 +45,7 @@ cd ai-harness
 | Codex | Yes | Partial | Partial | Yes | Yes | No subagent format, and prompts document no frontmatter, so only the body carries over |
 | Hermes | Yes | No | No | Yes | No | Consumes skills and workspace rules only |
 
-Any other tool that reads Agent Skills and `AGENTS.md` gets the skills and the rules. The rest depends on what that tool supports.
+> Any other tool that reads Agent Skills and `AGENTS.md` gets the skills and the rules. The rest depends on what that tool supports.
 
 ## Contents
 
