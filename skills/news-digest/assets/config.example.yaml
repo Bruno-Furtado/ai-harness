@@ -1,0 +1,8 @@
+# Copied to the state home as config.yaml by `state.py init`.
+# All values are optional; the scripts fall back to the defaults below.
+
+lookback_hours: 36    # how far back feeds are scanned
+max_per_feed: 8       # candidate cap per feed per run
+max_per_section: 4    # target items per digest section
+digest_language: en   # language of the written digest
+prune_days: 30        # how long seen items are kept
