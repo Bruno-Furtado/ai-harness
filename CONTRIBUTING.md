@@ -13,13 +13,8 @@ Contributions are welcome through pull requests.
 
 ## Adding an artifact
 
-- Use the matching file in `docs/templates/`.
-- Keep skills under `skills/<name>/SKILL.md`.
-- Document tool-specific behavior in `adapters/`.
-- Do not add provider tokens or machine-specific paths.
+Read [docs/authoring.md](docs/authoring.md) for the format of each artifact and start from the matching file in `docs/templates/`. Keep skills under `skills/<name>/SKILL.md`, document tool-specific behavior in `adapters/`, and do not add provider tokens, pinned models or machine-specific paths.
 
 ## Pull requests
 
-Pull requests must explain the problem, the proposed change, acceptance
-criteria and verification performed. Do not merge directly to `main` except
-for an emergency correction by the repository owner.
+Pull requests must explain the problem, the proposed change, acceptance criteria and verification performed. Do not merge directly to `main` except for an emergency correction by the repository owner.
