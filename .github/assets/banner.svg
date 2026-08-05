@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" width="640" height="220" role="img" aria-labelledby="title desc">
+  <title id="title">ai-harness</title>
+  <desc id="desc">Portable configuration for coding agents</desc>
+  <defs>
+    <clipPath id="frame">
+      <rect width="640" height="220" rx="24"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="640" height="220" fill="#111827"/>
+    <circle cx="622" cy="-8" r="96" fill="#1d4ed8" opacity=".28"/>
+    <circle cx="24" cy="226" r="88" fill="#059669" opacity=".22"/>
+    <g stroke="#93c5fd" stroke-width="3" stroke-linecap="round" opacity=".9">
+      <line x1="320" y1="68" x2="286" y2="44"/>
+      <line x1="320" y1="68" x2="354" y2="44"/>
+      <line x1="320" y1="68" x2="320" y2="108"/>
+    </g>
+    <circle cx="320" cy="68" r="9" fill="#f9fafb"/>
+    <circle cx="286" cy="44" r="7" fill="#3b82f6"/>
+    <circle cx="354" cy="44" r="7" fill="#10b981"/>
+    <circle cx="320" cy="108" r="7" fill="#a78bfa"/>
+    <text x="320" y="168" fill="#f9fafb" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="44" font-weight="700">ai-harness</text>
+  </g>
+</svg>
