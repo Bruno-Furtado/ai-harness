@@ -1,0 +1,26 @@
+name: Bug report
+description: Report an incorrect or unsafe behavior.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead. Remove secrets and private data from any log you paste.
+    validations:
+      required: true
+
+  - type: input
+    id: tool
+    attributes:
+      label: Tool and version
+      placeholder: OpenCode 0.5.1
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: false

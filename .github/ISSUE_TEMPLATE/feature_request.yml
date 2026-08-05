@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a focused improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is not possible today, and why it matters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How you would solve it, if you already have an idea.
+    validations:
+      required: false
