@@ -5,8 +5,10 @@ Reads the tier model lists and credit signals from $OPCODE_MODELS_FILE
 (default ~/.config/opencode/models.json). Tries the primary models in
 order, then the free list. A run is abandoned early when the provider
 reports exhausted credits on stderr (so the free fallback starts fast)
-or when it exceeds the tier timeout. Prints the OpenCode response on
-stdout and a one-line note about the chosen model on stderr.
+or when it exceeds the tier timeout. The whole cascade is bounded by
+total_budget_seconds, because a caller such as a scheduler gives up long
+before every model has burned a full timeout. Prints the OpenCode response
+on stdout and a one-line note about the chosen model on stderr.
 
 This file is model-agnostic by design: no model id is hardcoded here.
 """
@@ -84,7 +86,7 @@ def run(bin_path, model, prompt, timeout, cwd, signals):
             start_new_session=True,
         )
     except OSError as exc:
-        return None, f"could not start opencode: {exc}", True
+        return None, f"could not start opencode: {exc}", False, False, 127
 
     def reader():
         for line in proc.stderr:
@@ -121,40 +123,89 @@ def run(bin_path, model, prompt, timeout, cwd, signals):
 
 def main():
     ap = argparse.ArgumentParser(description="Run a task on OpenCode on the best model for its tier")
-    ap.add_argument("--tier", choices=["reason", "light"], required=True)
+    ap.add_argument("--tier", required=True, help="a tier name present in the models file")
     ap.add_argument("--cwd", default=None)
+    ap.add_argument(
+        "--budget",
+        type=int,
+        default=0,
+        help="seconds to spend across all attempts before giving up (0 = no budget)",
+    )
+    ap.add_argument(
+        "--model",
+        default=None,
+        help="run exactly this model and skip the cascade, for comparing models",
+    )
+    ap.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        help="skip this model in the cascade; repeatable. Use it to guarantee a second "
+        "opinion comes from a different model than the first pass",
+    )
     ap.add_argument("prompt", nargs="+", help="task to delegate")
     args = ap.parse_args()
 
     config = load_config(os.environ.get("OPCODE_MODELS_FILE", str(DEFAULT_CONFIG)))
+    if args.tier not in config["tiers"]:
+        known = ", ".join(sorted(config["tiers"]))
+        sys.exit(f"model router: unknown tier {args.tier!r}; the models file defines: {known}")
     tier = config["tiers"][args.tier]
     primaries = tier.get("primary", [])
     frees = tier.get("free", [])
     signals = config.get("credit_signals", [])
     timeout = config.get("timeout_seconds", {}).get(args.tier, 300)
+    budget = args.budget or config.get("total_budget_seconds", {}).get(args.tier, 0)
     prompt = " ".join(args.prompt)
     bin_path = find_opencode()
 
-    attempts = [(m, "primary") for m in primaries] + [(m, "free") for m in frees]
+    if args.model:
+        attempts = [(args.model, "pinned")]
+    else:
+        attempts = [(m, "primary") for m in primaries] + [(m, "free") for m in frees]
+        excluded = set(args.exclude)
+        if excluded:
+            attempts = [(m, k) for m, k in attempts if m not in excluded]
+            if not attempts:
+                sys.exit(
+                    f"model router: every model in tier {args.tier} was excluded; "
+                    "the tier needs at least one model the other pass did not use"
+                )
     if not attempts:
         sys.exit("model router: no models configured for tier")
 
+    started = time.time()
     for model, kind in attempts:
-        out, stderr, timed_out, credit_hit, rc = run(
-            bin_path, model, prompt, timeout, args.cwd, signals
+        spent = time.time() - started
+        if budget and spent >= budget:
+            print(
+                f"[model-router] giving up after {int(spent)}s, over the {budget}s budget "
+                f"for tier={args.tier}",
+                file=sys.stderr,
+            )
+            break
+        # Never let one attempt run past what is left of the budget: a caller
+        # such as a scheduler gives up long before 12 full timeouts elapse.
+        attempt_timeout = min(timeout, budget - spent) if budget else timeout
+        out, stderr, credit_hit, timed_out, rc = run(
+            bin_path, model, prompt, attempt_timeout, args.cwd, signals
         )
         if credit_hit:
             print(f"[model-router] {model}: credits exhausted; trying next", file=sys.stderr)
             continue
         if timed_out:
-            print(f"[model-router] {model}: timed out after {timeout}s; trying next", file=sys.stderr)
+            print(
+                f"[model-router] {model}: timed out after {int(attempt_timeout)}s; trying next",
+                file=sys.stderr,
+            )
             continue
         text = (out or "").strip()
         if rc == 0 and text:
             print(f"[model-router] ran {model} (tier={args.tier}, {kind})", file=sys.stderr)
             sys.stdout.write(text)
             return 0
-        print(f"[model-router] {model}: failed rc={rc}; trying next", file=sys.stderr)
+        reason = (stderr or "").strip().splitlines()[-1][:160] if (stderr or "").strip() else "no output"
+        print(f"[model-router] {model}: failed rc={rc} ({reason}); trying next", file=sys.stderr)
 
     print("[model-router] all models failed; check stderr above", file=sys.stderr)
     return 1

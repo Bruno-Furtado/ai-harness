@@ -28,11 +28,45 @@
         "opencode/mimo-v2.5-free",
         "opencode/north-mini-code-free"
       ]
+    },
+    "curate": {
+      "primary": [
+        "opencode-go/glm-5.1",
+        "opencode-go/minimax-m2.7",
+        "opencode-go/deepseek-v4-pro",
+        "opencode-go/hy3"
+      ],
+      "free": [
+        "opencode/deepseek-v4-flash-free",
+        "opencode/mimo-v2.5-free",
+        "opencode/ling-3.0-flash-free",
+        "opencode/big-pickle"
+      ]
+    },
+    "verify": {
+      "primary": [
+        "opencode-go/deepseek-v4-flash",
+        "opencode-go/mimo-v2.5",
+        "opencode-go/glm-5.1"
+      ],
+      "free": [
+        "opencode/mimo-v2.5-free",
+        "opencode/ling-3.0-flash-free",
+        "opencode/laguna-s-2.1-free"
+      ]
     }
   },
   "timeout_seconds": {
-    "reason": 420,
-    "light": 240
+    "reason": 240,
+    "light": 120,
+    "curate": 180,
+    "verify": 120
+  },
+  "total_budget_seconds": {
+    "reason": 600,
+    "light": 300,
+    "curate": 420,
+    "verify": 240
   },
   "credit_signals": [
     "AI_APICallError",
