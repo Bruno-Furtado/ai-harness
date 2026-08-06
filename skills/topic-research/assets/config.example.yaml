@@ -1,0 +1,14 @@
+# Copy to the state home as config.yaml and edit. Every key is optional:
+# the defaults below are what the scripts use when the file is absent.
+#
+#   $TOPIC_RESEARCH_HOME/config.yaml
+#   default: ~/.local/share/topic-research/config.yaml
+
+# Lookback window in days. A plan may override it, and --days wins over both.
+days: 30
+
+# Items fetched per source before ranking. Higher costs requests, not tokens.
+per_source: 12
+
+# Cap on the shortlist the model reads. This is the token control.
+max_items: 60
