@@ -3,6 +3,21 @@
 
 lookback_hours: 36    # how far back feeds are scanned
 max_per_feed: 8       # candidate cap per feed per run
-max_per_section: 4    # target items per digest section
-digest_language: en   # language of the written digest
+max_candidates: 60    # cap on the whole shortlist the agent reads, the main token control
+max_per_section: 2    # target items per digest section
+max_items: 8          # hard cap on delivered items, across all sections
+brief_max_chars: 3500 # hard cap on the delivered message, so a chat channel never splits it
+                      # (a 4096 limit leaves room: markdown escaping grows the text by under 5%)
+host_delay_seconds: 1.5 # pause between feeds of the same host; some servers rate limit per IP
+digest_language: en   # language every item is written in, translated from whatever the source used
+validate: true        # run the second-model validation pass before delivery
 prune_days: 30        # how long seen items are kept
+
+# Optional wording of the delivered message. {date} is replaced by the digest date.
+brief_header: "Digest {date}"
+brief_footer: 'Reply "+1 -3" to tune.'
+
+# Weekly source maintenance. Off by default: turning it on lets the agent add
+# feeds it found on its own, which widens what reaches the model unattended.
+auto_add_sources: false
+max_new_sources_per_week: 2

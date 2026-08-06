@@ -4,7 +4,8 @@
 Stdlib only. All state lives in the state home (see --home), never next to this
 script, because the skill directory is usually a symlink into a repository.
 
-Stdout: one JSON object per candidate item (with --json).
+Stdout: one JSON object per candidate item (with --json), or one compact
+pipe-separated line per item (with --compact, the cheap form for the model).
 Stderr: per-feed warnings and a run summary.
 Exit codes: 0 ok (partial failures reported), 2 no usable sources file.
 """
@@ -18,6 +19,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -28,6 +30,7 @@ from xml.etree import ElementTree as ET
 
 USER_AGENT = "news-digest/0.1 (personal rss reader)"
 TRACKING_PARAMS = re.compile(r"^(utm_|fbclid$|gclid$|ocid$|mc_cid$|mc_eid$)")
+ILLEGAL_XML_BYTES = re.compile(rb"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 ATOM_NS = "http://www.w3.org/2005/Atom"
 DC_NS = "http://purl.org/dc/elements/1.1/"
 
@@ -198,6 +201,45 @@ def strip_html(text: str, limit: int = 200) -> str:
     return text[: limit - 1].rstrip() + "…" if len(text) > limit else text
 
 
+def cap_candidates(shortlist: list[dict], limit: int) -> list[dict]:
+    """Keep at most `limit` candidates, taking them round-robin across sections.
+
+    Volume control, not editorial work: a section with 40 fresh items must not
+    push a quiet section out of the list the agent gets to see. Order inside a
+    section is already tier ascending, then publication descending.
+    """
+    if limit <= 0 or len(shortlist) <= limit:
+        return shortlist
+    by_section: dict[str, list[dict]] = {}
+    for cand in shortlist:
+        by_section.setdefault(cand["section"], []).append(cand)
+    queues = list(by_section.values())
+    kept: list[dict] = []
+    while len(kept) < limit and any(queues):
+        for queue in queues:
+            if queue:
+                kept.append(queue.pop(0))
+                if len(kept) >= limit:
+                    break
+    kept.sort(key=lambda c: c["published"], reverse=True)
+    kept.sort(key=lambda c: (c["section"], c["tier"]))
+    return kept
+
+
+def compact_line(cand: dict) -> str:
+    """One pipe-separated line per candidate: no url, no summary, no timestamp.
+
+    This is what the model reads. Dropping the url alone saves about half the
+    bytes, and the model never needs it: the renderer resolves urls by id.
+    """
+    def clean(value: str) -> str:
+        return re.sub(r"\s+", " ", str(value).replace("|", "/")).strip()
+
+    return "|".join(
+        (cand["id"], clean(cand["section"]), str(cand["tier"]), clean(cand["source"]), clean(cand["title"]))
+    )
+
+
 def parse_date(raw: str) -> datetime | None:
     raw = (raw or "").strip()
     if not raw:
@@ -225,7 +267,10 @@ def child_text(el: ET.Element, *tags: str) -> str:
 
 
 def parse_feed(data: bytes) -> list[dict]:
-    root = ET.fromstring(data)
+    # XML forbids most control characters, and real feeds do ship them: one
+    # stray byte would otherwise cost the whole feed. Stripping is safe on
+    # UTF-8 because no continuation byte falls in this range.
+    root = ET.fromstring(ILLEGAL_XML_BYTES.sub(b"", data))
     items = []
     if root.find("channel") is not None:
         for it in root.iter("item"):
@@ -272,13 +317,43 @@ def fetch_one(feed: dict, timeout: int) -> tuple[dict, bytes | None, str | None]
         return feed, None, str(exc)
 
 
+def host_of(url: str) -> str:
+    _, _, rest = url.partition("://")
+    return rest.partition("/")[0].lower()
+
+
+def fetch_host(feeds: list[dict], timeout: int, delay: float) -> list[tuple[dict, bytes | None, str | None]]:
+    """Fetch one host's feeds in sequence, spaced out, and stop on 429.
+
+    Hosts are fetched in parallel, feeds of the same host are not. Some
+    servers rate limit hard per IP: hitting several of their feeds at once
+    gets every one of them rejected, so being polite fetches more news than
+    being fast. Once a host answers 429 the rest of its feeds are skipped
+    for this run instead of hammering it further.
+    """
+    results = []
+    for index, feed in enumerate(feeds):
+        if index:
+            time.sleep(delay)
+        result = fetch_one(feed, timeout)
+        results.append(result)
+        error = result[2]
+        if error and "429" in error:
+            for skipped in feeds[index + 1 :]:
+                results.append((skipped, None, "skipped: host answered 429 earlier in this run"))
+            break
+    return results
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--home", help="state home directory")
     parser.add_argument("--hours", type=int, help="lookback window in hours")
     parser.add_argument("--max-per-feed", type=int, help="candidate cap per feed")
+    parser.add_argument("--max-candidates", type=int, help="cap on the whole shortlist")
     parser.add_argument("--timeout", type=int, default=15)
     parser.add_argument("--json", action="store_true", help="print JSONL shortlist to stdout")
+    parser.add_argument("--compact", action="store_true", help="print the compact shortlist to stdout")
     parser.add_argument("--check", action="store_true", help="report feed health and exit")
     args = parser.parse_args()
 
@@ -297,6 +372,8 @@ def main() -> int:
             print(f"warning: could not parse {config_path}: {exc}", file=sys.stderr)
     hours = args.hours or int(config.get("lookback_hours", 36))
     max_per_feed = args.max_per_feed or int(config.get("max_per_feed", 8))
+    max_candidates = args.max_candidates or int(config.get("max_candidates", 60))
+    host_delay = float(config.get("host_delay_seconds", 1.5))
 
     try:
         sources = load_structured(sources_path)
@@ -331,46 +408,54 @@ def main() -> int:
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     candidates, failures, quiet = [], [], []
 
+    by_host: dict[str, list[dict]] = {}
+    for feed in feeds:
+        by_host.setdefault(host_of(feed["url"]), []).append(feed)
+
     with ThreadPoolExecutor(max_workers=8) as pool:
-        futures = {pool.submit(fetch_one, feed, args.timeout): feed for feed in feeds}
+        futures = [
+            pool.submit(fetch_host, group, args.timeout, host_delay) for group in by_host.values()
+        ]
         for future in as_completed(futures):
-            feed, data, error = future.result()
-            label = f"{feed['section']}/{feed['name']}"
-            if error:
-                failures.append(f"{label}: {error}")
-                continue
-            try:
-                raw_items = parse_feed(data)  # type: ignore[arg-type]
-            except ET.ParseError as exc:
-                failures.append(f"{label}: unparseable feed ({exc})")
-                continue
-            fresh = []
-            for item in raw_items:
-                dt = parse_date(item["published"])
-                if dt and dt < cutoff:
+            for feed, data, error in future.result():
+                label = f"{feed['section']}/{feed['name']}"
+                if error:
+                    failures.append(f"{label}: {error}")
                     continue
-                item["_dt"] = dt
-                fresh.append(item)
-            fresh.sort(key=lambda it: it["_dt"] or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
-            if not fresh:
-                quiet.append(label)
-            for item in fresh[:max_per_feed]:
-                url_hash = hash12(norm_url(item["url"]))
-                title_hash = hash12(norm_title(item["title"]))
-                if url_hash in seen_hashes or title_hash in seen_hashes:
+                try:
+                    raw_items = parse_feed(data)  # type: ignore[arg-type]
+                except ET.ParseError as exc:
+                    failures.append(f"{label}: unparseable feed ({exc})")
                     continue
-                candidates.append(
-                    {
-                        "id": url_hash,
-                        "title": item["title"].strip(),
-                        "url": item["url"].strip(),
-                        "source": feed["name"],
-                        "tier": feed["tier"],
-                        "section": feed["section"],
-                        "published": item["_dt"].isoformat() if item["_dt"] else "",
-                        "summary": strip_html(item["summary"]),
-                    }
+                fresh = []
+                for item in raw_items:
+                    dt = parse_date(item["published"])
+                    if dt and dt < cutoff:
+                        continue
+                    item["_dt"] = dt
+                    fresh.append(item)
+                fresh.sort(
+                    key=lambda it: it["_dt"] or datetime.min.replace(tzinfo=timezone.utc), reverse=True
                 )
+                if not fresh:
+                    quiet.append(label)
+                for item in fresh[:max_per_feed]:
+                    url_hash = hash12(norm_url(item["url"]))
+                    title_hash = hash12(norm_title(item["title"]))
+                    if url_hash in seen_hashes or title_hash in seen_hashes:
+                        continue
+                    candidates.append(
+                        {
+                            "id": url_hash,
+                            "title": item["title"].strip(),
+                            "url": item["url"].strip(),
+                            "source": feed["name"],
+                            "tier": feed["tier"],
+                            "section": feed["section"],
+                            "published": item["_dt"].isoformat() if item["_dt"] else "",
+                            "summary": strip_html(item["summary"]),
+                        }
+                    )
 
     # same-story dedupe within this run: identical normalized title keeps the lowest tier
     best_by_title: dict[str, dict] = {}
@@ -381,20 +466,29 @@ def main() -> int:
             best_by_title[key] = cand
     shortlist = sorted(best_by_title.values(), key=lambda c: c["published"], reverse=True)
     shortlist.sort(key=lambda c: (c["section"], c["tier"]))
+    collected = len(shortlist)
+    shortlist = cap_candidates(shortlist, max_candidates)
 
     if not args.check:
+        # The archive keeps the full record: the renderer resolves url, source
+        # and tier from here, so the model never has to carry them.
         (home / ".last_shortlist.jsonl").write_text(
             "".join(json.dumps(c, ensure_ascii=False) + "\n" for c in shortlist), encoding="utf-8"
         )
-    if args.json and not args.check:
-        for cand in shortlist:
-            print(json.dumps(cand, ensure_ascii=False))
+    if not args.check:
+        if args.compact:
+            for cand in shortlist:
+                print(compact_line(cand))
+        elif args.json:
+            for cand in shortlist:
+                print(json.dumps(cand, ensure_ascii=False))
 
     for failure in failures:
         print(f"feed-failure: {failure}", file=sys.stderr)
+    capped = f", capped from {collected}" if collected > len(shortlist) else ""
     print(
         f"summary: {len(feeds)} feeds, {len(failures)} failed, {len(quiet)} quiet, "
-        f"{len(shortlist)} candidates (window {hours}h)",
+        f"{len(shortlist)} candidates{capped} (window {hours}h)",
         file=sys.stderr,
     )
     if args.check:

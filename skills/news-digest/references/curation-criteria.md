@@ -1,6 +1,6 @@
 # Curation criteria
 
-How to rank candidates, what to drop and how to format the digest. The scripts do no editorial work; every judgment below is made by the agent at digest time.
+How to rank candidates, what to drop and what to emit. The scripts do no editorial work; every judgment below is made by the agent at digest time.
 
 ## Source tiers
 
@@ -18,7 +18,7 @@ A story is obvious when any of these holds:
 - It is launch hype without substance: a product announcement with no technical detail, no numbers and no independent angle.
 - It is recycled: a rewrite of an older story with no new fact.
 
-Obvious stories are dropped unless the user's `profile.md` explicitly wants that beat. When a saturated story is truly unavoidable, keep it to one line and prefer the tier-1 version.
+Obvious stories are dropped unless the user's `profile.md` explicitly wants that beat. When a saturated story is truly unavoidable, prefer the tier-1 version.
 
 ## Drop: repeated stories
 
@@ -33,39 +33,59 @@ Boost stories that are:
 - High impact for the reader per `profile.md`: affects their tools, costs, stack or city.
 - Consequential but quiet: policy, pricing, deprecations, security advisories, infrastructure changes.
 
+## Language is not a selection criterion
+
+Sources may be in any language, and the source language is never a reason to prefer or drop a candidate. A tier-1 post in Chinese outranks a tier-2 rewrite in the reader's own language. The translation happens at write time, below.
+
+## Against the bubble
+
+A digest that always draws from the same five feeds trains the reader to expect one worldview. On a tie in relevance, take the candidate whose source has gone longest without appearing. `stats.json` records `last_shown` per feed, so this is a lookup, not a hunch, and `run_digest.py` passes the stalest sources into the selection prompt.
+
+This breaks ties only. It never promotes a weak story over a strong one: variety is a tiebreaker, not a quota.
+
+## Sections have an intent, not just a name
+
+An item's section comes from the feed that carried it, never from its content, and feeds are often broader than the section they sit in. A construction industry feed placed under a home financing section will offer workplace safety rules: correctly filed, and wrong for the reader.
+
+Each section in `sources.yaml` may carry a `focus` line saying what it is for and what it is not for. A candidate that does not match its section's focus is dropped. It cannot be moved, because moving it would invent a section assignment the feed does not support, so a misfit is always a drop.
+
+## Politics: what counts as relevant
+
+Keep what changes a rule, a tax, an interest rate, a contract, a public price or the technology sector, and what a reader would act on. Leave out electoral horse race, poll movement and backroom manoeuvring, which are abundant and change nothing for the reader by tomorrow.
+
 ## Ranking procedure
 
 1. Drop the obvious and the repeated per above.
-2. Score what remains: profile match first, tier second, novelty third.
-3. Select up to `max_per_section` per section, from `config.yaml`. Fewer is fine; an empty section is omitted, never padded.
+2. Score what remains: profile match first, tier second, novelty third, source staleness as the tiebreaker.
+3. Select up to `max_per_section` per section and never more than `max_items` in total, both from `config.yaml`. Fewer is fine; an empty section is omitted, never padded. When the two caps collide, `max_items` wins and the weakest sections lose their slot.
 
-## Output template
+## Output contract
 
-Write in the user's language. One file per day, saved to `digests/YYYY-MM-DD.md`:
+The agent does not write the digest. It emits one selection line per chosen item, in ranked order, and `render_digest.py` produces both the delivered message and the archive:
 
-```markdown
-# Digest — <weekday, date>
-
-## <Section name as in sources.yaml>
-1. **<Title>** — <one sentence: what happened>
-   Why it matters: <specific consequence for this reader, never generic filler>
-   Source: <feed name>, tier <n> — <link>
-
-...
-Feedback: reply with "+<n> -<n>" or free text, for example "more of item 2's kind".
+```
+<id>|<title>|<why>
 ```
 
-Rules:
+- `<id>` is the id from the compact shortlist, copied exactly. An id that is not in the shortlist is dropped by the renderer.
+- `<title>` is the headline rewritten in `digest_language`, at most about 60 characters. It becomes the link text, so it carries the news by itself.
+- `<why>` is the concrete consequence for this reader, at most 12 words. The renderer truncates anything longer.
 
-- "Why it matters" must name a concrete consequence. If none exists, the item should not be in the digest.
-- Every item keeps the `id` from the shortlist internally so feedback and `mark-shown` can reference it.
-- No section invented by the agent: sections mirror the user's `sources.yaml`.
+Nothing else goes to stdout: no urls, no preamble, no section headers, no closing note, no code fence. The renderer resolves url, source, tier and section from the id, which is why an invented link cannot reach the reader.
+
+Writing rules, enforced by the renderer and worth following at the source:
+
+- Everything is written in `digest_language`, whatever language the source used. Do not leave the original headline in, not even in parentheses. Proper nouns, product names and acronyms stay as they are.
+- No em dash, and no hyphen used as punctuation. A hyphen inside a word is fine.
+- No emoji anywhere.
+- "Why" names a concrete consequence. If there is none, the item does not belong in the digest, and a filler line like "important for the sector" is worse than dropping the item.
 
 ## Feedback syntax
 
-- `+2 -1` marks item 2 relevant and item 1 irrelevant.
-- Free text ("more cost topics", "less startup gossip") goes to the same feedback log as a note on the closest items, or as a general note when no item fits.
+- `+2 -1` marks the item numbered 2 relevant and the item numbered 1 irrelevant. The numbers are the ones printed in the delivered message, resolved through `.last_digest.json`.
+- Free text ("more cost topics", "less startup gossip") is recorded once as a general note.
+- Both forms go in through `state.py feedback --from-last "<the reply>"`.
 
 ## Validation handoff
 
-Send the validator the draft, the raw shortlist it came from and this file's rules. The validator checks traceability, tiers, duplicates, obvious stories and rationale quality. It runs on a model different from the drafter's model; if that cannot be guaranteed, the final output must disclose it.
+Send the validator the selection lines and the compact shortlist they came from, nothing else. Link, tier and section correctness are mechanical now, so the validator judges what the renderer cannot: duplicates, obvious stories, filler rationales, wrong section, and translations that leaked the source language or lost the meaning. It runs on a model different from the drafter's model; if that cannot be guaranteed, the final output must disclose it.

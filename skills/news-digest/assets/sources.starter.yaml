@@ -5,22 +5,30 @@
 # untouched inside the skill.
 #
 # Schema:
-#   sections: list of { name, feeds }
+#   sections: list of { name, focus, feeds }
 #   feeds:    list of { name, url, tier }
+#
+# focus: optional but strongly recommended. An item's section comes from the
+#        feed that carried it, so a broad feed drags in stories that belong to
+#        it and do not belong in that section of the digest. Say what the
+#        section is for, and what it is not for, and the agent drops the
+#        misfits instead of filing them.
 #
 # tier: 1 = primary or official source (vendor blogs, papers, release notes)
 #       2 = major outlet with editorial process
 #       3 = niche, curated source or aggregator
 sections:
   - name: world
+    focus: international events of consequence; not domestic politics of one country
     feeds:
       - name: BBC World
         url: http://feeds.bbci.co.uk/news/world/rss.xml
         tier: 2
   - name: technology
+    focus: software, security and products; not company earnings or politics
     feeds:
       - name: Hacker News
-        url: https://news.ycombinator.com/rss
+        url: https://hnrss.org/frontpage?points=200
         tier: 3
       - name: Ars Technica
         url: https://feeds.arstechnica.com/arstechnica/index
