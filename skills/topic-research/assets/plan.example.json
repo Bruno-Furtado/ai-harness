@@ -1,0 +1,19 @@
+{
+  "topic": "Claude Code",
+  "days": 30,
+  "sources": {
+    "hackernews": ["claude code"],
+    "github": ["claude code agent"],
+    "arxiv": ["coding agent evaluation"],
+    "polymarket": ["anthropic"],
+    "reddit": {
+      "queries": ["claude code"],
+      "communities": ["ClaudeAI", "ClaudeCode"]
+    },
+    "bluesky": ["claude code"],
+    "x": ["claude code"],
+    "youtube": ["claude code workflow"],
+    "tiktok": ["claude code"],
+    "instagram": ["claude code"]
+  }
+}

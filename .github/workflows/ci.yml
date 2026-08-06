@@ -27,6 +27,14 @@ jobs:
             bash -n "$file"
           done
 
+      - name: Check python syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Skill scripts ship as source and run on whatever python3 the host
+          # has, so a syntax error only shows up when someone runs the skill.
+          python3 -m compileall -q skills
+
       - name: Validate frontmatter
         shell: bash
         run: |
