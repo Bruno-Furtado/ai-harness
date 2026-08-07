@@ -36,6 +36,82 @@ cd ai-harness
 ./sync.sh --unlink    # remove apenas os links que apontam para cá
 ```
 
+Se quiser só as skills, sem clonar:
+
+```bash
+npx skills add Bruno-Furtado/ai-harness
+```
+
+## Catálogo
+
+Todos os artefatos deste repositório. A tabela é gerada a partir dos próprios arquivos, então não desatualiza.
+
+<!-- catalog:start -->
+
+### Skills
+
+| Nome | O que faz | Como usar |
+| --- | --- | --- |
+| [dream](skills/dream/SKILL.md) | Revisa as sessões do dia e propõe mudanças de memória, cada item com evidência citada. | `/dream`, depois `/dream apply 1,3` |
+| [news-digest](skills/news-digest/SKILL.md) | Monta um resumo pessoal a partir dos seus próprios feeds, com memória de repetidos e conferência por um segundo modelo. | `/news-digest [seções]` |
+| [task-delegation](skills/task-delegation/SKILL.md) | Entrega uma tarefa ao OpenCode, que a executa no melhor modelo disponível para aquele nível. | Peça, ou deixe a ferramenta disparar |
+| [topic-research](skills/topic-research/SKILL.md) | Coleta o que foi dito sobre um tema em várias fontes e relata com citações. | `/topic-research <tema>` |
+
+### Agents
+
+| Nome | O que faz | Como usar |
+| --- | --- | --- |
+| [code-reviewer](agents/code-reviewer.md) | Revisa uma mudança e relata riscos, regressões e testes faltando. Nunca edita arquivos. | `/review-changes`, ou delegue pelo nome |
+| [news-digest-validator](agents/news-digest-validator.md) | Confere a seleção do digest procurando repetidos, notícias óbvias e traduções fracas antes da entrega. | Chamado pela skill `news-digest` |
+| [proposal-validator](agents/proposal-validator.md) | Dá uma segunda opinião sobre um plano, uma mudança ou um relatório, em outro modelo. Somente leitura. | `/validate-proposal`, ou delegue pelo nome |
+
+### Commands
+
+| Nome | O que faz | Como usar |
+| --- | --- | --- |
+| [dream](commands/dream.md) | Roda a rotina de memória do dream, ou aplica, lista e descarta as propostas dela. | `/dream`, `/dream apply all`, `/dream list` |
+| [news-digest](commands/news-digest.md) | Monta o digest de notícias e entrega como uma única mensagem curta. | `/news-digest [seções]` |
+| [review-changes](commands/review-changes.md) | Revisa as mudanças atuais do git buscando correção, segurança e testes faltando. | `/review-changes` |
+| [topic-research](commands/topic-research.md) | Pesquisa um tema e escreve um relatório onde toda afirmação cita um item coletado. | `/topic-research <tema>` |
+| [validate-proposal](commands/validate-proposal.md) | Envia o plano, a mudança ou o relatório atual para uma segunda opinião independente. | `/validate-proposal` |
+
+### Hooks
+
+| Nome | O que faz | Como usar |
+| --- | --- | --- |
+| [protect-secrets](hooks/protect-secrets.sh) | Bloqueia chamadas de ferramenta que referenciam arquivos .env, de credencial, segredo, certificado ou chave. | Ligado uma vez por ferramenta, veja Integração |
+
+### Rules
+
+| Nome | O que faz | Como usar |
+| --- | --- | --- |
+| [global](rules/global.md) | Regras permanentes para todo projeto: forma de trabalho, validação, segurança e comunicação. | Linkado como o `AGENTS.md` global |
+
+<!-- catalog:end -->
+
+## Integração
+
+O `sync.sh` cria um symlink por artefato, então uma edição aqui chega em todas as ferramentas de uma vez. É assim que cada um é instalado:
+
+| Artefato | Claude Code | OpenCode | Codex | Hermes |
+| --- | --- | --- | --- | --- |
+| `skills/<nome>/` | `~/.claude/skills/` | `~/.config/opencode/skills/` | `~/.agents/skills/` | `~/.hermes/skills/` |
+| `agents/<nome>.md` | `~/.claude/agents/` | `~/.config/opencode/agents/` | Não suportado | Não suportado |
+| `commands/<nome>.md` | `~/.claude/commands/` | `~/.config/opencode/commands/` | `~/.codex/prompts/` | Não suportado |
+| `rules/global.md` | `~/.claude/CLAUDE.md` | `~/.config/opencode/AGENTS.md` | `~/.codex/AGENTS.md` | Regras do workspace |
+
+Depois é só chamar pelo nome que está no catálogo: `/news-digest` como comando, `code-reviewer` como subagent, e uma skill pedindo o que ela faz.
+
+Hooks são a exceção, porque hook é código executável e nenhuma ferramenta aceita um só por symlink. A ligação é feita uma vez por ferramenta:
+
+| Ferramenta | Como |
+| --- | --- |
+| Claude Code | Cole [adapters/claude/settings.snippet.json](adapters/claude/settings.snippet.json) no `~/.claude/settings.json`, trocando o placeholder pelo caminho absoluto deste clone |
+| Codex | Igual, usando [adapters/codex/hooks.json](adapters/codex/hooks.json) |
+| OpenCode | Já está pronto. O `sync.sh` linka [o plugin](adapters/opencode/plugins/harness-hooks.ts), que chama o mesmo script |
+
+Qualquer outra ferramenta que leia Agent Skills e `AGENTS.md` pega as skills e as rules sozinha. Basta apontar para `skills/` e para `rules/global.md`.
+
 ## Suporte às ferramentas
 
 | Ferramenta | Skills | Agents | Commands | Rules | Hooks | Observação |

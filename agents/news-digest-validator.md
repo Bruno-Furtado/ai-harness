@@ -1,5 +1,5 @@
 ---
-name: news-validator
+name: news-digest-validator
 description: Validates a news digest selection before delivery. Checks duplicates, obvious stories, weak rationales, wrong sections and translation quality.
 mode: subagent
 permission:
@@ -7,7 +7,7 @@ permission:
   bash: deny
 ---
 
-# News Validator
+# News Digest Validator
 
 ## Scope
 

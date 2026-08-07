@@ -1,6 +1,6 @@
 ---
-description: Send a plan or change to the independent validator for a second opinion.
-agent: validator
+description: Send a proposal, a plan, a change or a report to the proposal-validator for a second opinion.
+agent: proposal-validator
 subtask: true
 ---
 

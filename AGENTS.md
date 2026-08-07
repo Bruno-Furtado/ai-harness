@@ -14,7 +14,10 @@ This repository contains portable configuration for coding agents. Keep the port
 ## Artifact standards
 
 - Skills live at `skills/<name>/SKILL.md` and follow agentskills.io.
-- Skill names use lowercase letters, numbers and single hyphens.
+- Every name uses lowercase letters, numbers and single hyphens, at most three words, and matches the file or folder it lives in.
+- A skill is a noun phrase for the capability. An agent is `<scope>-<role>`, never a bare role, and an agent owned by a skill takes that skill's name as its scope. A command is either the name of the skill it opens or `<verb>-<object>`. Hooks and repository scripts are `<verb>-<object>`.
+- A command that opens a skill stays thin: description, `$ARGUMENTS` contract, what to deliver, and the skill's name. The procedure lives in `SKILL.md` only.
+- Adding or renaming an artifact requires a line in `docs/catalog.json` in both languages, then `python3 scripts/build-catalog.py` to regenerate the README catalog.
 - Every agent, command and skill must state scope, non-goals, acceptance criteria and validation steps.
 - Every agent, command and skill keeps `name` and `description` portable, and states any restriction in the body too, because frontmatter keys only apply in the tool that defines them.
 - Do not pin a model in a committed artifact. The model is a choice of whoever installs it.
@@ -35,6 +38,8 @@ Run these checks before opening a pull request:
 
 ```bash
 for file in sync.sh hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
+python3 -m compileall -q skills scripts
+python3 scripts/build-catalog.py --check
 ./sync.sh --dry-run
 ./sync.sh --check
 ```
