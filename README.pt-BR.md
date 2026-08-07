@@ -34,8 +34,6 @@ pip install ai-harness-cli
 harness
 ```
 
-Se o seu Python for gerenciado pelo sistema e o pip recusar, use `pipx install ai-harness-cli` ou `uv tool install ai-harness-cli`.
-
 Para escrever os seus próprios artefatos, clone este repositório e rode `./harness` de dentro dele. O clone cria links em vez de copiar, então um `git pull` chega em todas as ferramentas de uma vez.
 
 ```bash
@@ -104,18 +102,14 @@ harness remove   # remove apenas o que o harness instalou
 
 <!-- integration:end -->
 
-Depois é só chamar pelo nome que está no catálogo: `/news-digest` como comando, `code-reviewer` como subagent, e uma skill pedindo o que ela faz.
-
-Hooks são a exceção. Hook é código executável e nenhuma ferramenta aceita um só por symlink, então cada ferramenta é ligada uma vez. O [hooks/README.md](hooks/README.md) tem o passo a passo.
-
 ## Suporte às ferramentas
 
-| Ferramenta | Skills | Agents | Commands | Rules | Hooks | Observação |
-| --- | :---: | :---: | :---: | :---: | :---: | --- |
-| OpenCode | Sim | Sim | Sim | Sim | Adapter | Hooks chegam por plugin |
-| Claude Code | Sim | Sim | Sim | Sim | Sim | |
-| Codex | Sim | Parcial | Parcial | Sim | Sim | Não tem formato de subagent, e os prompts não documentam frontmatter, então só o corpo é aproveitado |
-| Hermes | Sim | Não | Não | Workspace | Não | Lê regras do workspace, então não há arquivo global para instalar |
+| Ferramenta | Skills | Agents | Commands | Rules | Hooks |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| OpenCode | Sim | Sim | Sim | Sim | Adapter |
+| Claude Code | Sim | Sim | Sim | Sim | Sim |
+| Codex | Sim | Parcial | Parcial | Sim | Sim |
+| Hermes | Sim | Não | Não | Workspace | Não |
 
 ## Conteúdo
 
