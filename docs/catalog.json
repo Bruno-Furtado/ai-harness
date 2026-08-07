@@ -1,114 +1,114 @@
 {
   "skill/dream": {
     "en": {
-      "does": "Reviews the day's sessions and proposes memory changes, one evidence-cited item at a time."
+      "does": "Reads the day's sessions and suggests what is worth remembering, like the fact that you prefer Postgres."
     },
     "pt": {
-      "does": "Revisa as sessões do dia e propõe mudanças de memória, cada item com evidência citada."
+      "does": "Lê as sessões do dia e sugere o que vale lembrar, por exemplo que você prefere Postgres a MySQL."
     }
   },
   "skill/news-digest": {
     "en": {
-      "does": "Builds a personal digest from your own feeds, with dedupe memory and a second-model check."
+      "does": "Reads your feeds and delivers the day's news as one short message, skipping what you already saw."
     },
     "pt": {
-      "does": "Monta um resumo pessoal a partir dos seus próprios feeds, com memória de repetidos e conferência por um segundo modelo."
+      "does": "Lê seus feeds e entrega as notícias do dia numa mensagem curta, pulando o que você já viu."
     }
   },
   "skill/task-delegation": {
     "en": {
-      "does": "Hands a task to OpenCode, which runs it on the best model available for that tier."
+      "does": "Hands a heavy task to OpenCode so it runs on the strongest model you have available."
     },
     "pt": {
-      "does": "Entrega uma tarefa ao OpenCode, que a executa no melhor modelo disponível para aquele nível."
+      "does": "Passa uma tarefa pesada para o OpenCode rodar no modelo mais forte que você tem."
     }
   },
   "skill/topic-research": {
     "en": {
-      "does": "Collects what people said about a topic across several sources and reports it with citations."
+      "does": "Researches a topic across Hacker News, Reddit and GitHub, with a link behind every claim."
     },
     "pt": {
-      "does": "Coleta o que foi dito sobre um tema em várias fontes e relata com citações."
+      "does": "Pesquisa um tema no Hacker News, Reddit e GitHub, com um link atrás de cada afirmação."
     }
   },
   "agent/code-reviewer": {
     "en": {
-      "does": "Reviews a change and reports risks, regressions and missing tests. Never edits files."
+      "does": "Reads your diff and points out bugs, security risks and missing tests. Changes nothing."
     },
     "pt": {
-      "does": "Revisa uma mudança e relata riscos, regressões e testes faltando. Nunca edita arquivos."
+      "does": "Lê o seu diff e aponta bug, risco de segurança e teste faltando. Não altera nada."
     }
   },
   "agent/news-digest-validator": {
     "en": {
-      "does": "Checks a digest selection for duplicates, obvious stories and weak translations before delivery."
+      "does": "Checks the digest before it reaches you and cuts repeated, obvious or badly translated stories."
     },
     "pt": {
-      "does": "Confere a seleção do digest procurando repetidos, notícias óbvias e traduções fracas antes da entrega."
+      "does": "Confere o digest antes de chegar em você e corta notícia repetida, óbvia ou mal traduzida."
     }
   },
   "agent/proposal-validator": {
     "en": {
-      "does": "Gives a second opinion on a plan, a change or a report, on a different model. Read-only."
+      "does": "Sends your plan to a different model, to catch what the first one talked itself into."
     },
     "pt": {
-      "does": "Dá uma segunda opinião sobre um plano, uma mudança ou um relatório, em outro modelo. Somente leitura."
+      "does": "Manda o seu plano para outro modelo, para pegar o que o primeiro deixou passar."
     }
   },
   "command/dream": {
     "en": {
-      "does": "Runs the dream memory routine, or applies, lists and dismisses its proposals."
+      "does": "Runs dream and applies the suggestions you approve, one by one."
     },
     "pt": {
-      "does": "Roda a rotina de memória do dream, ou aplica, lista e descarta as propostas dela."
+      "does": "Roda o dream e aplica as sugestões que você aprovar, uma a uma."
     }
   },
   "command/news-digest": {
     "en": {
-      "does": "Builds the news digest and delivers it as one short message."
+      "does": "Asks for today's digest right now."
     },
     "pt": {
-      "does": "Monta o digest de notícias e entrega como uma única mensagem curta."
+      "does": "Pede o digest de hoje agora."
     }
   },
   "command/review-changes": {
     "en": {
-      "does": "Reviews the current git changes for correctness, security and missing tests."
+      "does": "Reviews what you changed, before you open the pull request."
     },
     "pt": {
-      "does": "Revisa as mudanças atuais do git buscando correção, segurança e testes faltando."
+      "does": "Revisa o que você mudou, antes de abrir o pull request."
     }
   },
   "command/topic-research": {
     "en": {
-      "does": "Researches a topic and writes a report where every claim cites a collected item."
+      "does": "Researches a topic and writes a report you can check, since every claim cites its source."
     },
     "pt": {
-      "does": "Pesquisa um tema e escreve um relatório onde toda afirmação cita um item coletado."
+      "does": "Pesquisa um tema e escreve um relatório conferível, porque toda afirmação cita a fonte."
     }
   },
   "command/validate-proposal": {
     "en": {
-      "does": "Sends the current plan, change or report for an independent second opinion."
+      "does": "Sends the plan on the table for an independent second opinion."
     },
     "pt": {
-      "does": "Envia o plano, a mudança ou o relatório atual para uma segunda opinião independente."
+      "does": "Manda o plano que está na mesa para uma segunda opinião independente."
     }
   },
   "hook/protect-secrets": {
     "en": {
-      "does": "Blocks tool calls that reference .env, credential, secret, certificate or key files."
+      "does": "Stops the agent from opening .env, key and certificate files, even when you ask by accident."
     },
     "pt": {
-      "does": "Bloqueia chamadas de ferramenta que referenciam arquivos .env, de credencial, segredo, certificado ou chave."
+      "does": "Impede o agente de abrir .env, chave e certificado, mesmo que você peça sem querer."
     }
   },
   "rule/global": {
     "en": {
-      "does": "Standing rules for every project: working style, validation, safety and communication."
+      "does": "Tells the agent how to work everywhere: ask when unsure, show evidence before claiming it is done."
     },
     "pt": {
-      "does": "Regras permanentes para todo projeto: forma de trabalho, validação, segurança e comunicação."
+      "does": "Diz ao agente como trabalhar em todo projeto: perguntar na dúvida, mostrar evidência antes de dizer que terminou."
     }
   }
 }

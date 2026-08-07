@@ -4,7 +4,7 @@
   <img src="./.github/assets/banner.svg" alt="ai-harness">
 </p>
 
-<h3 align="center">Agents, skills, commands, hooks e rules agnósticos de ferramenta, em um só lugar</h3>
+<h3 align="center">Escreva um agent, uma skill, um command, um hook ou uma rule uma vez.<br>Um comando instala em todas as ferramentas de IA que você usa.</h3>
 
 <p align="center">
   <a href="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml"><img src="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -42,7 +42,26 @@ harness check    # audita o que está instalado
 harness remove   # remove apenas o que o harness instalou
 ```
 
+## Conteúdo
+
+O mapa do repositório, para escrever um artefato ou achar onde cada peça mora.
+
+| Caminho | O que fica ali |
+| --- | --- |
+| `agents/` | Agents, no formato que cada ferramenta lê |
+| `skills/` | Skills no layout aberto do Agent Skills |
+| `commands/` | Prompts que cada ferramenta expõe como comando |
+| `hooks/` | Scripts de guarda compartilhados pelos adapters |
+| `rules/` | Regras globais, linkadas como `AGENTS.md` |
+| `adapters/` | O que cada ferramenta precisa para integrar o resto |
+| `docs/` | Como criar um artefato e como as peças se encaixam |
+| `harness`, `ai_harness/` | O instalador |
+| `targets.json` | Onde cada artefato é instalado, por ferramenta |
+| `CONTRIBUTING.md` | Como propor uma mudança e como as releases são publicadas |
+
 ## Catálogo
+
+O que você ganha depois de instalar.
 
 <!-- catalog:start -->
 
@@ -50,40 +69,40 @@ harness remove   # remove apenas o que o harness instalou
 
 | Nome | O que faz |
 | --- | --- |
-| [dream](skills/dream/SKILL.md) | Revisa as sessões do dia e propõe mudanças de memória, cada item com evidência citada. |
-| [news-digest](skills/news-digest/SKILL.md) | Monta um resumo pessoal a partir dos seus próprios feeds, com memória de repetidos e conferência por um segundo modelo. |
-| [task-delegation](skills/task-delegation/SKILL.md) | Entrega uma tarefa ao OpenCode, que a executa no melhor modelo disponível para aquele nível. |
-| [topic-research](skills/topic-research/SKILL.md) | Coleta o que foi dito sobre um tema em várias fontes e relata com citações. |
+| [dream](skills/dream/SKILL.md) | Lê as sessões do dia e sugere o que vale lembrar, por exemplo que você prefere Postgres a MySQL. |
+| [news-digest](skills/news-digest/SKILL.md) | Lê seus feeds e entrega as notícias do dia numa mensagem curta, pulando o que você já viu. |
+| [task-delegation](skills/task-delegation/SKILL.md) | Passa uma tarefa pesada para o OpenCode rodar no modelo mais forte que você tem. |
+| [topic-research](skills/topic-research/SKILL.md) | Pesquisa um tema no Hacker News, Reddit e GitHub, com um link atrás de cada afirmação. |
 
 ### Agents
 
 | Nome | O que faz |
 | --- | --- |
-| [code-reviewer](agents/code-reviewer.md) | Revisa uma mudança e relata riscos, regressões e testes faltando. Nunca edita arquivos. |
-| [news-digest-validator](agents/news-digest-validator.md) | Confere a seleção do digest procurando repetidos, notícias óbvias e traduções fracas antes da entrega. |
-| [proposal-validator](agents/proposal-validator.md) | Dá uma segunda opinião sobre um plano, uma mudança ou um relatório, em outro modelo. Somente leitura. |
+| [code-reviewer](agents/code-reviewer.md) | Lê o seu diff e aponta bug, risco de segurança e teste faltando. Não altera nada. |
+| [news-digest-validator](agents/news-digest-validator.md) | Confere o digest antes de chegar em você e corta notícia repetida, óbvia ou mal traduzida. |
+| [proposal-validator](agents/proposal-validator.md) | Manda o seu plano para outro modelo, para pegar o que o primeiro deixou passar. |
 
 ### Commands
 
 | Nome | O que faz |
 | --- | --- |
-| [dream](commands/dream.md) | Roda a rotina de memória do dream, ou aplica, lista e descarta as propostas dela. |
-| [news-digest](commands/news-digest.md) | Monta o digest de notícias e entrega como uma única mensagem curta. |
-| [review-changes](commands/review-changes.md) | Revisa as mudanças atuais do git buscando correção, segurança e testes faltando. |
-| [topic-research](commands/topic-research.md) | Pesquisa um tema e escreve um relatório onde toda afirmação cita um item coletado. |
-| [validate-proposal](commands/validate-proposal.md) | Envia o plano, a mudança ou o relatório atual para uma segunda opinião independente. |
+| [dream](commands/dream.md) | Roda o dream e aplica as sugestões que você aprovar, uma a uma. |
+| [news-digest](commands/news-digest.md) | Pede o digest de hoje agora. |
+| [review-changes](commands/review-changes.md) | Revisa o que você mudou, antes de abrir o pull request. |
+| [topic-research](commands/topic-research.md) | Pesquisa um tema e escreve um relatório conferível, porque toda afirmação cita a fonte. |
+| [validate-proposal](commands/validate-proposal.md) | Manda o plano que está na mesa para uma segunda opinião independente. |
 
 ### Hooks
 
 | Nome | O que faz |
 | --- | --- |
-| [protect-secrets](hooks/protect-secrets.sh) | Bloqueia chamadas de ferramenta que referenciam arquivos .env, de credencial, segredo, certificado ou chave. |
+| [protect-secrets](hooks/protect-secrets.sh) | Impede o agente de abrir .env, chave e certificado, mesmo que você peça sem querer. |
 
 ### Rules
 
 | Nome | O que faz |
 | --- | --- |
-| [global](rules/global.md) | Regras permanentes para todo projeto: forma de trabalho, validação, segurança e comunicação. |
+| [global](rules/global.md) | Diz ao agente como trabalhar em todo projeto: perguntar na dúvida, mostrar evidência antes de dizer que terminou. |
 
 <!-- catalog:end -->
 
@@ -111,20 +130,7 @@ harness remove   # remove apenas o que o harness instalou
 | Codex | Sim | Parcial | Parcial | Sim | Sim |
 | Hermes | Sim | Não | Não | Workspace | Não |
 
-## Conteúdo
-
-| Caminho | O que fica ali |
-| --- | --- |
-| `agents/` | Agents, no formato que cada ferramenta lê |
-| `skills/` | Skills no layout aberto do Agent Skills |
-| `commands/` | Prompts que cada ferramenta expõe como comando |
-| `hooks/` | Scripts de guarda compartilhados pelos adapters |
-| `rules/` | Regras globais, linkadas como `AGENTS.md` |
-| `adapters/` | O que cada ferramenta precisa para integrar o resto |
-| `docs/` | Como criar um artefato e como as peças se encaixam |
-| `harness`, `ai_harness/` | O instalador |
-| `targets.json` | Onde cada artefato é instalado, por ferramenta |
-| `CONTRIBUTING.md` | Como propor uma mudança e como as releases são publicadas |
+Parcial quer dizer que o Codex não tem formato de subagent, e os prompts dele não documentam frontmatter, então só o corpo é aproveitado. Workspace quer dizer que o Hermes lê as regras do projeto, então não há arquivo global para instalar.
 
 ## Regras de trabalho
 

@@ -4,7 +4,7 @@
   <img src="./.github/assets/banner.svg" alt="ai-harness">
 </p>
 
-<h3 align="center">Tool agnostic agents, skills, commands, hooks and rules, in one place</h3>
+<h3 align="center">Write an agent, a skill, a command, a hook or a rule once.<br>One command installs it into every AI tool you use.</h3>
 
 <p align="center">
   <a href="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml"><img src="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -34,8 +34,6 @@ pip install ai-harness-cli
 harness
 ```
 
-If your Python is managed by the system and pip refuses, use `pipx install ai-harness-cli` or `uv tool install ai-harness-cli`.
-
 To write your own artifacts, clone this repository and run `./harness` from it. A clone links instead of copying, so a `git pull` reaches every tool at once.
 
 ```bash
@@ -44,7 +42,26 @@ harness check    # audit what is installed
 harness remove   # take back only what harness installed
 ```
 
+## Contents
+
+The map of the repository, for writing an artifact or finding where a piece lives.
+
+| Path | What lives there |
+| --- | --- |
+| `agents/` | Agents, in the format each tool reads |
+| `skills/` | Skills in the open Agent Skills layout |
+| `commands/` | Prompts that each tool exposes as a command |
+| `hooks/` | Guard scripts the adapters share |
+| `rules/` | Global rules, linked as `AGENTS.md` |
+| `adapters/` | What each tool needs to wire the rest up |
+| `docs/` | How to author an artifact and how the pieces fit together |
+| `harness`, `ai_harness/` | The installer |
+| `targets.json` | Where every artifact lands, per tool |
+| `CONTRIBUTING.md` | How to propose a change and how releases are cut |
+
 ## Catalog
+
+What you get once it is installed.
 
 <!-- catalog:start -->
 
@@ -52,40 +69,40 @@ harness remove   # take back only what harness installed
 
 | Name | What it does |
 | --- | --- |
-| [dream](skills/dream/SKILL.md) | Reviews the day's sessions and proposes memory changes, one evidence-cited item at a time. |
-| [news-digest](skills/news-digest/SKILL.md) | Builds a personal digest from your own feeds, with dedupe memory and a second-model check. |
-| [task-delegation](skills/task-delegation/SKILL.md) | Hands a task to OpenCode, which runs it on the best model available for that tier. |
-| [topic-research](skills/topic-research/SKILL.md) | Collects what people said about a topic across several sources and reports it with citations. |
+| [dream](skills/dream/SKILL.md) | Reads the day's sessions and suggests what is worth remembering, like the fact that you prefer Postgres. |
+| [news-digest](skills/news-digest/SKILL.md) | Reads your feeds and delivers the day's news as one short message, skipping what you already saw. |
+| [task-delegation](skills/task-delegation/SKILL.md) | Hands a heavy task to OpenCode so it runs on the strongest model you have available. |
+| [topic-research](skills/topic-research/SKILL.md) | Researches a topic across Hacker News, Reddit and GitHub, with a link behind every claim. |
 
 ### Agents
 
 | Name | What it does |
 | --- | --- |
-| [code-reviewer](agents/code-reviewer.md) | Reviews a change and reports risks, regressions and missing tests. Never edits files. |
-| [news-digest-validator](agents/news-digest-validator.md) | Checks a digest selection for duplicates, obvious stories and weak translations before delivery. |
-| [proposal-validator](agents/proposal-validator.md) | Gives a second opinion on a plan, a change or a report, on a different model. Read-only. |
+| [code-reviewer](agents/code-reviewer.md) | Reads your diff and points out bugs, security risks and missing tests. Changes nothing. |
+| [news-digest-validator](agents/news-digest-validator.md) | Checks the digest before it reaches you and cuts repeated, obvious or badly translated stories. |
+| [proposal-validator](agents/proposal-validator.md) | Sends your plan to a different model, to catch what the first one talked itself into. |
 
 ### Commands
 
 | Name | What it does |
 | --- | --- |
-| [dream](commands/dream.md) | Runs the dream memory routine, or applies, lists and dismisses its proposals. |
-| [news-digest](commands/news-digest.md) | Builds the news digest and delivers it as one short message. |
-| [review-changes](commands/review-changes.md) | Reviews the current git changes for correctness, security and missing tests. |
-| [topic-research](commands/topic-research.md) | Researches a topic and writes a report where every claim cites a collected item. |
-| [validate-proposal](commands/validate-proposal.md) | Sends the current plan, change or report for an independent second opinion. |
+| [dream](commands/dream.md) | Runs dream and applies the suggestions you approve, one by one. |
+| [news-digest](commands/news-digest.md) | Asks for today's digest right now. |
+| [review-changes](commands/review-changes.md) | Reviews what you changed, before you open the pull request. |
+| [topic-research](commands/topic-research.md) | Researches a topic and writes a report you can check, since every claim cites its source. |
+| [validate-proposal](commands/validate-proposal.md) | Sends the plan on the table for an independent second opinion. |
 
 ### Hooks
 
 | Name | What it does |
 | --- | --- |
-| [protect-secrets](hooks/protect-secrets.sh) | Blocks tool calls that reference .env, credential, secret, certificate or key files. |
+| [protect-secrets](hooks/protect-secrets.sh) | Stops the agent from opening .env, key and certificate files, even when you ask by accident. |
 
 ### Rules
 
 | Name | What it does |
 | --- | --- |
-| [global](rules/global.md) | Standing rules for every project: working style, validation, safety and communication. |
+| [global](rules/global.md) | Tells the agent how to work everywhere: ask when unsure, show evidence before claiming it is done. |
 
 <!-- catalog:end -->
 
@@ -104,33 +121,16 @@ This is where each artifact lands.
 
 <!-- integration:end -->
 
-Then invoke an artifact by the name in the catalog: `/news-digest` as a command, `code-reviewer` as a subagent, and a skill by asking for what it does.
-
-Hooks are the exception. A hook is executable code, and no tool accepts one by symlink alone, so each tool is wired once. [hooks/README.md](hooks/README.md) has the how.
-
 ## Tool support
 
-| Tool | Skills | Agents | Commands | Rules | Hooks | Notes |
-| --- | :---: | :---: | :---: | :---: | :---: | --- |
-| OpenCode | Yes | Yes | Yes | Yes | Adapter | Hooks arrive through a plugin |
-| Claude Code | Yes | Yes | Yes | Yes | Yes | |
-| Codex | Yes | Partial | Partial | Yes | Yes | No subagent format, and prompts document no frontmatter, so only the body carries over |
-| Hermes | Yes | No | No | Workspace | No | Reads rules from the workspace, so there is no global file to install |
+| Tool | Skills | Agents | Commands | Rules | Hooks |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| OpenCode | Yes | Yes | Yes | Yes | Adapter |
+| Claude Code | Yes | Yes | Yes | Yes | Yes |
+| Codex | Yes | Partial | Partial | Yes | Yes |
+| Hermes | Yes | No | No | Workspace | No |
 
-## Contents
-
-| Path | What lives there |
-| --- | --- |
-| `agents/` | Agents, in the format each tool reads |
-| `skills/` | Skills in the open Agent Skills layout |
-| `commands/` | Prompts that each tool exposes as a command |
-| `hooks/` | Guard scripts the adapters share |
-| `rules/` | Global rules, linked as `AGENTS.md` |
-| `adapters/` | What each tool needs to wire the rest up |
-| `docs/` | How to author an artifact and how the pieces fit together |
-| `harness`, `ai_harness/` | The installer |
-| `targets.json` | Where every artifact lands, per tool |
-| `CONTRIBUTING.md` | How to propose a change and how releases are cut |
+Partial means Codex has no subagent format, and its prompts document no frontmatter, so only the body carries over. Workspace means Hermes reads rules from the project, so there is no global file to install.
 
 ## Design rules
 
