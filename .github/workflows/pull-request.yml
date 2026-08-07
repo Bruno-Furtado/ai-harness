@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   triage:
@@ -24,17 +25,25 @@ jobs:
     steps:
       - name: Require an assignee, a label and a milestone
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
-          # GITHUB_EVENT_PATH is set by the runner. The github.event_path
-          # expression is not, and expands to an empty string.
-          test -f "$GITHUB_EVENT_PATH"
+          # Read the current state of the pull request, not the event payload.
+          # The payload is a snapshot taken when the event fired, and `gh pr
+          # create` sets assignee, labels and milestone in separate calls right
+          # after opening. That fires several events at once, so the snapshot a
+          # run receives can be missing a field that is already set by the time
+          # the run executes. Asking the API removes the race.
+          pr=$(gh api "repos/$REPO/pulls/$PR_NUMBER")
 
-          assignees=$(jq '.pull_request.assignees | length' "$GITHUB_EVENT_PATH")
-          labels=$(jq -r '[.pull_request.labels[].name] | join(", ")' "$GITHUB_EVENT_PATH")
-          label_count=$(jq '.pull_request.labels | length' "$GITHUB_EVENT_PATH")
-          milestone=$(jq -r '.pull_request.milestone.title // ""' "$GITHUB_EVENT_PATH")
+          assignees=$(jq '.assignees | length' <<<"$pr")
+          labels=$(jq -r '[.labels[].name] | join(", ")' <<<"$pr")
+          label_count=$(jq '.labels | length' <<<"$pr")
+          milestone=$(jq -r '.milestone.title // ""' <<<"$pr")
 
           missing=0
 
