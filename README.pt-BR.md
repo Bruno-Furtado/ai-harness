@@ -34,7 +34,7 @@ pip install ai-harness-cli
 harness
 ```
 
-Para escrever os seus próprios artefatos, clone este repositório e rode `./harness` de dentro dele. O clone cria links em vez de copiar, então um `git pull` chega em todas as ferramentas de uma vez.
+Depois de instalado:
 
 ```bash
 harness update   # traz os artefatos novos e reconcilia

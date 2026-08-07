@@ -2,6 +2,18 @@
 
 Contributions are welcome through pull requests.
 
+## Working from a clone
+
+The README covers installing the published artifacts. To write your own, or to change the ones here, work from a checkout instead:
+
+```bash
+git clone https://github.com/Bruno-Furtado/ai-harness.git
+cd ai-harness
+./harness
+```
+
+Run from a clone the installer symlinks rather than copies, so an edit here reaches every tool immediately and a `git pull` updates all of them at once. That is what makes a checkout the right place to author an artifact.
+
 ## Before opening a pull request
 
 1. Create a branch from `main`.
