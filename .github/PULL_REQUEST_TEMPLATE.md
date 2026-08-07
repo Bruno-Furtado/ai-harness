@@ -11,7 +11,7 @@ Describe the problem and the change.
 ## Validation
 
 - [ ] Every shell script passes `bash -n`, checked one file per call.
-- [ ] `./sync.sh --dry-run` was reviewed.
+- [ ] `HOME=$(mktemp -d) ./harness install --yes --dry-run` was reviewed.
 - [ ] Relevant behavior was tested in the target tool.
 - [ ] A second model reviewed important design or security decisions.
 

@@ -30,7 +30,7 @@ A name is the only handle a user has on an artifact, and in most tools it is als
 
 A role on its own, such as `validator` or `reviewer`, is not allowed: it collides with the built-in agents most tools ship, and the user cannot tell which one they got. A command that opens a skill takes the skill's name so the two are obviously the same thing, which is also why the pairing costs nothing to remember.
 
-The `Check artifact naming` step in CI enforces all of this. Renaming an artifact breaks an existing install, so it is a major version, and whoever renames runs `./sync.sh --unlink` before the rename, not after: `--unlink` walks the names that exist now, so a link whose source name is gone is never visited and stays dangling.
+The `Check artifact naming` step in CI enforces all of this. Renaming an artifact breaks an existing install, so it is a major version, and whoever renames runs `./harness remove` before the rename, not after: `remove` walks the names that exist now, so an entry whose source name is gone is never visited and stays behind.
 
 ## Design rules
 
@@ -61,11 +61,10 @@ Optional folders next to `SKILL.md`: `scripts/` for executable code, `references
 
 Agents load skills progressively: the name and description are always in context, the body is loaded when the skill is triggered, and the extra files only when the body points to them. Keep `SKILL.md` under 500 lines and move long reference material into `references/`.
 
-Validate and distribute:
+Validate:
 
 ```bash
 skills-ref validate ./skills/<name>
-npx skills add Bruno-Furtado/ai-harness
 ```
 
 Start from [templates/SKILL.md](templates/SKILL.md).
@@ -119,19 +118,20 @@ Hook events and payload shapes differ between tools, so the wiring lives in `ada
 
 ## Rules
 
-Location: `rules/global.md`. `sync.sh` links this file as the global `AGENTS.md` and as the global rules file of each tool that has one.
+Location: `rules/global.md`. `harness` installs this file as the global `AGENTS.md` and as the global rules file of each tool that has one. Which path that is, per tool, comes from `targets.json`.
 
 Rules are standing instructions that apply to every project, so keep them short and behavioral. Anything about a specific project, a specific stack or a single workflow belongs in that project's own `AGENTS.md` or in a skill.
 
 ## Before opening a pull request
 
 ```bash
-for file in sync.sh hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
-python3 -m compileall -q skills scripts
+for file in hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
+python3 -m compileall -q ai_harness skills scripts
 python3 scripts/build-catalog.py
-./sync.sh --dry-run
-./sync.sh --check
+HOME=$(mktemp -d) ./harness install --yes --dry-run
 ```
+
+The throwaway `HOME` is not optional. Pointing the installer at your own home to see what it does is how you end up repairing a config directory by hand.
 
 A new artifact needs its line in [catalog.json](catalog.json), in both languages, before `build-catalog.py` will run. That is deliberate: it is what keeps the README catalog complete without anyone remembering to update two files by hand.
 

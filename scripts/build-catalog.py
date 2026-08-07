@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""Regenerate the artifact catalog tables in both READMEs.
+"""Regenerate the generated tables in both READMEs.
 
-The short line shown in the table lives in docs/catalog.json, not in the
-artifact frontmatter: `description` is trigger text, written for a model and
-often several lines long. Keeping the table text out of the artifact also keeps
-the frontmatter portable, with no key invented by this repository.
+Two of them, from two sources.
 
-The generator fails when an artifact has no entry, or an entry has no artifact,
-so a new artifact cannot ship without a line in both languages.
+The catalog comes from docs/catalog.json, not from the artifact frontmatter:
+`description` is trigger text, written for a model and often several lines
+long. Keeping the table text out of the artifact also keeps the frontmatter
+portable, with no key invented by this repository. The generator fails when an
+artifact has no entry, or an entry has no artifact, so a new artifact cannot
+ship without a line in both languages.
+
+The integration table comes from targets.json, the same file the harness CLI
+installs from. It used to be transcribed by hand in two languages, with nothing
+checking it against the installer, so it could drift silently.
 """
 
 import argparse
@@ -19,8 +24,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "docs" / "catalog.json"
+TARGETS = ROOT / "targets.json"
 START = "<!-- catalog:start -->"
 END = "<!-- catalog:end -->"
+TARGETS_START = "<!-- integration:start -->"
+TARGETS_END = "<!-- integration:end -->"
 
 # kind -> (directory label, heading in English, heading in Portuguese)
 SECTIONS = (
@@ -32,9 +40,14 @@ SECTIONS = (
 )
 
 HEADERS = {
-    "en": ("Name", "What it does", "How to use it"),
-    "pt": ("Nome", "O que faz", "Como usar"),
+    "en": ("Name", "What it does"),
+    "pt": ("Nome", "O que faz"),
 }
+
+# How to invoke an artifact is the tool's job to surface, not this table's.
+FIELDS = ("does",)
+
+INTEGRATION_HEADER = {"en": "Artifact", "pt": "Artefato"}
 
 READMES = {
     "en": ROOT / "README.md",
@@ -73,7 +86,7 @@ def check_coverage(found, catalog):
     for key in sorted(artifacts & set(catalog)):
         entry = catalog[key]
         for language in HEADERS:
-            for field in ("does", "use"):
+            for field in FIELDS:
                 if not str(entry.get(language, {}).get(field, "")).strip():
                     problems.append(f"{key} is missing a non-empty '{language}.{field}'")
 
@@ -86,7 +99,7 @@ def cell(text):
 
 
 def render(found, catalog, language):
-    name_header, does_header, use_header = HEADERS[language]
+    name_header, does_header = HEADERS[language]
     lines = []
 
     for kind, heading_en, heading_pt in SECTIONS:
@@ -95,22 +108,44 @@ def render(found, catalog, language):
             continue
         lines.append(f"### {heading_en if language == 'en' else heading_pt}")
         lines.append("")
-        lines.append(f"| {name_header} | {does_header} | {use_header} |")
-        lines.append("| --- | --- | --- |")
+        lines.append(f"| {name_header} | {does_header} |")
+        lines.append("| --- | --- |")
         for name, path in items:
             entry = catalog[f"{kind}/{name}"][language]
-            lines.append(f"| [{name}]({path}) | {cell(entry['does'])} | {cell(entry['use'])} |")
+            lines.append(f"| [{name}]({path}) | {cell(entry['does'])} |")
         lines.append("")
 
     return "\n".join(lines).rstrip()
 
 
-def splice(text, block, path):
-    if START not in text or END not in text:
-        raise SystemExit(f"error: {path.name} has no {START} / {END} markers")
-    head, rest = text.split(START, 1)
-    _, tail = rest.split(END, 1)
-    return f"{head}{START}\n\n{block}\n\n{END}{tail}"
+def render_integration(targets, language):
+    """The Integration table, straight from what the installer reads."""
+    tools = targets["tools"]
+    artifacts = [a for a in targets["artifacts"] if a.get("table", True)]
+    unsupported = targets["unsupported"][language]
+
+    header = [INTEGRATION_HEADER[language]] + [tool["label"] for tool in tools]
+    lines = [
+        "| " + " | ".join(header) + " |",
+        "| " + " | ".join(["---"] * len(header)) + " |",
+    ]
+
+    for artifact in artifacts:
+        row = [f"`{artifact['doc']}`"]
+        for tool in tools:
+            destination = tool.get("install", {}).get(artifact["id"])
+            row.append(f"`~/{destination}`" if destination else unsupported)
+        lines.append("| " + " | ".join(row) + " |")
+
+    return "\n".join(lines)
+
+
+def splice(text, block, path, start=START, end=END):
+    if start not in text or end not in text:
+        raise SystemExit(f"error: {path.name} has no {start} / {end} markers")
+    head, rest = text.split(start, 1)
+    _, tail = rest.split(end, 1)
+    return f"{head}{start}\n\n{block}\n\n{end}{tail}"
 
 
 def main():
@@ -123,6 +158,7 @@ def main():
     args = parser.parse_args()
 
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    targets = json.loads(TARGETS.read_text(encoding="utf-8"))
     found = discover()
 
     problems = check_coverage(found, catalog)
@@ -135,6 +171,13 @@ def main():
     for language, path in READMES.items():
         current = path.read_text(encoding="utf-8")
         updated = splice(current, render(found, catalog, language), path)
+        updated = splice(
+            updated,
+            render_integration(targets, language),
+            path,
+            TARGETS_START,
+            TARGETS_END,
+        )
         if current == updated:
             continue
         if args.check:

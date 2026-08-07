@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Entrypoint for a clone. Installed from PyPI, the `harness` command runs the
+same package.
+
+Kept deliberately old-fashioned: the version check has to run and print
+something readable on a Python too old to parse the rest of the package.
+"""
+
+import sys
+
+if sys.version_info < (3, 9):
+    sys.stderr.write(
+        "ai-harness needs Python 3.9 or newer, and this is %d.%d.\n"
+        "macOS ships 3.9 with the Command Line Tools: xcode-select --install\n"
+        % (sys.version_info[0], sys.version_info[1])
+    )
+    raise SystemExit(1)
+
+import os.path  # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from ai_harness.main import main  # noqa: E402
+
+if __name__ == "__main__":
+    raise SystemExit(main())

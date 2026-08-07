@@ -2,11 +2,19 @@
 
 ## Source of truth
 
-Portable content is stored in the repository. Tool-specific files live under `adapters/`. The sync script links individual items and refuses to replace existing real files.
+Portable content is stored in the repository. Tool-specific files live under `adapters/`. Where each artifact lands, per tool, is declared once in `targets.json`: the installer reads it, and so does the generator that writes the Integration table in both READMEs, so the docs cannot describe a layout the installer does not implement.
 
 ## Public installation surface
 
-Skills use the open `skills/<name>/SKILL.md` layout from agentskills.io, which most tools discover on their own and which the `npx skills` CLI can install. Templates stay in `docs/templates/` so they are never installed as if they were real artifacts. See [authoring.md](authoring.md) for the format of each artifact.
+The `harness` CLI installs, and it runs two ways from one code path.
+
+From a clone it symlinks, so a `git pull` reaches every tool at once. That is the mode for someone writing their own artifacts.
+
+Installed from PyPI as `ai-harness-cli` it copies, from a bundled tree inside the wheel. Copying is not a stylistic choice: `pip install -U` rewrites the package directory and `pipx upgrade` recreates the whole venv, so a symlink into either would dangle after the first upgrade, silently, and the user would only find out when a skill stopped appearing.
+
+Either way it never replaces an existing real file, and it removes only what it put there.
+
+Skills use the open `skills/<name>/SKILL.md` layout from agentskills.io, which most tools discover on their own and which the `npx skills` CLI can install from this repository too. Templates stay in `docs/templates/` so they are never installed as if they were real artifacts. See [authoring.md](authoring.md) for the format of each artifact.
 
 ## Compatibility
 

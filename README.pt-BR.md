@@ -4,10 +4,11 @@
   <img src="./.github/assets/banner.svg" alt="ai-harness">
 </p>
 
-<h3 align="center">Agents, skills, commands, hooks e rules agnósticos de ferramenta, em um só lugar</h3>
+<h3 align="center">Escreva um agent, uma skill, um command, um hook ou uma rule uma vez.<br>Um comando instala em todas as ferramentas de IA que você usa.</h3>
 
 <p align="center">
   <a href="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml"><img src="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://pypi.org/project/ai-harness-cli/"><img src="https://img.shields.io/pypi/v/ai-harness-cli?color=3B82F6&style=flat" alt="PyPI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/licença-MIT-22C55E?style=flat" alt="Licença: MIT"></a>
   <img src="https://img.shields.io/badge/padrão-agentskills.io-3B82F6?style=flat" alt="Agent Skills">
   <img src="https://img.shields.io/badge/padrão-AGENTS.md-3B82F6?style=flat" alt="AGENTS.md">
@@ -22,108 +23,28 @@
 
 ## O que é
 
-Escreva um agent, uma skill, um command, um hook ou uma rule uma vez e use em todas as ferramentas que você usa. A parte portável segue padrões abertos, Agent Skills e `AGENTS.md`, e a integração que cada ferramenta exige fica em `adapters/`, então nada aqui depende de um fornecedor específico.
+Escreva um agent, uma skill, um command, um hook ou uma rule uma vez e use em todas as suas ferramentas. A parte portável segue padrões abertos, Agent Skills e `AGENTS.md`, e a integração que cada ferramenta exige fica em `adapters/`, então nada aqui depende de um fornecedor específico.
 
 ## Instalação
 
-```bash
-git clone https://github.com/Bruno-Furtado/ai-harness.git
-cd ai-harness
-
-./sync.sh --dry-run   # mostra todas as mudanças, sem escrever nada
-./sync.sh             # cria os links dos artefatos em cada ferramenta
-./sync.sh --check     # audita os links depois
-./sync.sh --unlink    # remove apenas os links que apontam para cá
-```
-
-Se quiser só as skills, sem clonar:
+O `harness` pergunta em quais ferramentas instalar e quais artefatos levar, e coloca cada um onde a ferramenta procura.
 
 ```bash
-npx skills add Bruno-Furtado/ai-harness
+pip install ai-harness-cli
+harness
 ```
 
-## Catálogo
+Depois de instalado:
 
-Todos os artefatos deste repositório. A tabela é gerada a partir dos próprios arquivos, então não desatualiza.
-
-<!-- catalog:start -->
-
-### Skills
-
-| Nome | O que faz | Como usar |
-| --- | --- | --- |
-| [dream](skills/dream/SKILL.md) | Revisa as sessões do dia e propõe mudanças de memória, cada item com evidência citada. | `/dream`, depois `/dream apply 1,3` |
-| [news-digest](skills/news-digest/SKILL.md) | Monta um resumo pessoal a partir dos seus próprios feeds, com memória de repetidos e conferência por um segundo modelo. | `/news-digest [seções]` |
-| [task-delegation](skills/task-delegation/SKILL.md) | Entrega uma tarefa ao OpenCode, que a executa no melhor modelo disponível para aquele nível. | Peça, ou deixe a ferramenta disparar |
-| [topic-research](skills/topic-research/SKILL.md) | Coleta o que foi dito sobre um tema em várias fontes e relata com citações. | `/topic-research <tema>` |
-
-### Agents
-
-| Nome | O que faz | Como usar |
-| --- | --- | --- |
-| [code-reviewer](agents/code-reviewer.md) | Revisa uma mudança e relata riscos, regressões e testes faltando. Nunca edita arquivos. | `/review-changes`, ou delegue pelo nome |
-| [news-digest-validator](agents/news-digest-validator.md) | Confere a seleção do digest procurando repetidos, notícias óbvias e traduções fracas antes da entrega. | Chamado pela skill `news-digest` |
-| [proposal-validator](agents/proposal-validator.md) | Dá uma segunda opinião sobre um plano, uma mudança ou um relatório, em outro modelo. Somente leitura. | `/validate-proposal`, ou delegue pelo nome |
-
-### Commands
-
-| Nome | O que faz | Como usar |
-| --- | --- | --- |
-| [dream](commands/dream.md) | Roda a rotina de memória do dream, ou aplica, lista e descarta as propostas dela. | `/dream`, `/dream apply all`, `/dream list` |
-| [news-digest](commands/news-digest.md) | Monta o digest de notícias e entrega como uma única mensagem curta. | `/news-digest [seções]` |
-| [review-changes](commands/review-changes.md) | Revisa as mudanças atuais do git buscando correção, segurança e testes faltando. | `/review-changes` |
-| [topic-research](commands/topic-research.md) | Pesquisa um tema e escreve um relatório onde toda afirmação cita um item coletado. | `/topic-research <tema>` |
-| [validate-proposal](commands/validate-proposal.md) | Envia o plano, a mudança ou o relatório atual para uma segunda opinião independente. | `/validate-proposal` |
-
-### Hooks
-
-| Nome | O que faz | Como usar |
-| --- | --- | --- |
-| [protect-secrets](hooks/protect-secrets.sh) | Bloqueia chamadas de ferramenta que referenciam arquivos .env, de credencial, segredo, certificado ou chave. | Ligado uma vez por ferramenta, veja Integração |
-
-### Rules
-
-| Nome | O que faz | Como usar |
-| --- | --- | --- |
-| [global](rules/global.md) | Regras permanentes para todo projeto: forma de trabalho, validação, segurança e comunicação. | Linkado como o `AGENTS.md` global |
-
-<!-- catalog:end -->
-
-## Integração
-
-O `sync.sh` cria um symlink por artefato, então uma edição aqui chega em todas as ferramentas de uma vez. É assim que cada um é instalado:
-
-| Artefato | Claude Code | OpenCode | Codex | Hermes |
-| --- | --- | --- | --- | --- |
-| `skills/<nome>/` | `~/.claude/skills/` | `~/.config/opencode/skills/` | `~/.agents/skills/` | `~/.hermes/skills/` |
-| `agents/<nome>.md` | `~/.claude/agents/` | `~/.config/opencode/agents/` | Não suportado | Não suportado |
-| `commands/<nome>.md` | `~/.claude/commands/` | `~/.config/opencode/commands/` | `~/.codex/prompts/` | Não suportado |
-| `rules/global.md` | `~/.claude/CLAUDE.md` | `~/.config/opencode/AGENTS.md` | `~/.codex/AGENTS.md` | Regras do workspace |
-
-Depois é só chamar pelo nome que está no catálogo: `/news-digest` como comando, `code-reviewer` como subagent, e uma skill pedindo o que ela faz.
-
-Hooks são a exceção, porque hook é código executável e nenhuma ferramenta aceita um só por symlink. A ligação é feita uma vez por ferramenta:
-
-| Ferramenta | Como |
-| --- | --- |
-| Claude Code | Cole [adapters/claude/settings.snippet.json](adapters/claude/settings.snippet.json) no `~/.claude/settings.json`, trocando o placeholder pelo caminho absoluto deste clone |
-| Codex | Igual, usando [adapters/codex/hooks.json](adapters/codex/hooks.json) |
-| OpenCode | Já está pronto. O `sync.sh` linka [o plugin](adapters/opencode/plugins/harness-hooks.ts), que chama o mesmo script |
-
-Qualquer outra ferramenta que leia Agent Skills e `AGENTS.md` pega as skills e as rules sozinha. Basta apontar para `skills/` e para `rules/global.md`.
-
-## Suporte às ferramentas
-
-| Ferramenta | Skills | Agents | Commands | Rules | Hooks | Observação |
-| --- | :---: | :---: | :---: | :---: | :---: | --- |
-| OpenCode | Sim | Sim | Sim | Sim | Adapter | Hooks chegam por plugin |
-| Claude Code | Sim | Sim | Sim | Sim | Sim | |
-| Codex | Sim | Parcial | Parcial | Sim | Sim | Não tem formato de subagent, e os prompts não documentam frontmatter, então só o corpo é aproveitado |
-| Hermes | Sim | Não | Não | Sim | Não | Consome apenas skills e regras de workspace |
-
-Qualquer outra ferramenta que leia Agent Skills e `AGENTS.md` recebe as skills e as rules. O resto depende do que essa ferramenta suporta.
+```bash
+harness update   # traz os artefatos novos e reconcilia
+harness check    # audita o que está instalado
+harness remove   # remove apenas o que o harness instalou
+```
 
 ## Conteúdo
+
+O mapa do repositório, para escrever um artefato ou achar onde cada peça mora.
 
 | Caminho | O que fica ali |
 | --- | --- |
@@ -134,8 +55,82 @@ Qualquer outra ferramenta que leia Agent Skills e `AGENTS.md` recebe as skills e
 | `rules/` | Regras globais, linkadas como `AGENTS.md` |
 | `adapters/` | O que cada ferramenta precisa para integrar o resto |
 | `docs/` | Como criar um artefato e como as peças se encaixam |
+| `harness`, `ai_harness/` | O instalador |
+| `targets.json` | Onde cada artefato é instalado, por ferramenta |
 | `CONTRIBUTING.md` | Como propor uma mudança e como as releases são publicadas |
-| `sync.sh` | Cria os links de tudo nas ferramentas que você usa |
+
+## Catálogo
+
+O que você ganha depois de instalar.
+
+<!-- catalog:start -->
+
+### Skills
+
+| Nome | O que faz |
+| --- | --- |
+| [dream](skills/dream/SKILL.md) | Lê as sessões do dia e sugere o que vale lembrar, por exemplo que você prefere Postgres a MySQL. |
+| [news-digest](skills/news-digest/SKILL.md) | Lê seus feeds e entrega as notícias do dia numa mensagem curta, pulando o que você já viu. |
+| [task-delegation](skills/task-delegation/SKILL.md) | Passa uma tarefa pesada para o OpenCode rodar no modelo mais forte que você tem. |
+| [topic-research](skills/topic-research/SKILL.md) | Pesquisa um tema no Hacker News, Reddit e GitHub, com um link atrás de cada afirmação. |
+
+### Agents
+
+| Nome | O que faz |
+| --- | --- |
+| [code-reviewer](agents/code-reviewer.md) | Lê o seu diff e aponta bug, risco de segurança e teste faltando. Não altera nada. |
+| [news-digest-validator](agents/news-digest-validator.md) | Confere o digest antes de chegar em você e corta notícia repetida, óbvia ou mal traduzida. |
+| [proposal-validator](agents/proposal-validator.md) | Manda o seu plano para outro modelo, para pegar o que o primeiro deixou passar. |
+
+### Commands
+
+| Nome | O que faz |
+| --- | --- |
+| [dream](commands/dream.md) | Roda o dream e aplica as sugestões que você aprovar, uma a uma. |
+| [news-digest](commands/news-digest.md) | Pede o digest de hoje agora. |
+| [review-changes](commands/review-changes.md) | Revisa o que você mudou, antes de abrir o pull request. |
+| [topic-research](commands/topic-research.md) | Pesquisa um tema e escreve um relatório conferível, porque toda afirmação cita a fonte. |
+| [validate-proposal](commands/validate-proposal.md) | Manda o plano que está na mesa para uma segunda opinião independente. |
+
+### Hooks
+
+| Nome | O que faz |
+| --- | --- |
+| [protect-secrets](hooks/protect-secrets.sh) | Impede o agente de abrir .env, chave e certificado, mesmo que você peça sem querer. |
+
+### Rules
+
+| Nome | O que faz |
+| --- | --- |
+| [global](rules/global.md) | Diz ao agente como trabalhar em todo projeto: perguntar na dúvida, mostrar evidência antes de dizer que terminou. |
+
+<!-- catalog:end -->
+
+## Integração
+
+É assim que cada artefato é instalado.
+
+<!-- integration:start -->
+
+| Artefato | Claude Code | OpenCode | Codex | Hermes |
+| --- | --- | --- | --- | --- |
+| `skills/<name>/` | `~/.claude/skills` | `~/.config/opencode/skills` | `~/.agents/skills` | `~/.hermes/skills` |
+| `agents/<name>.md` | `~/.claude/agents` | `~/.config/opencode/agents` | Não suportado | Não suportado |
+| `commands/<name>.md` | `~/.claude/commands` | `~/.config/opencode/commands` | `~/.codex/prompts` | Não suportado |
+| `rules/global.md` | `~/.claude/CLAUDE.md` | `~/.config/opencode/AGENTS.md` | `~/.codex/AGENTS.md` | Não suportado |
+
+<!-- integration:end -->
+
+## Suporte às ferramentas
+
+| Ferramenta | Skills | Agents | Commands | Rules | Hooks |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| OpenCode | Sim | Sim | Sim | Sim | Adapter |
+| Claude Code | Sim | Sim | Sim | Sim | Sim |
+| Codex | Sim | Parcial | Parcial | Sim | Sim |
+| Hermes | Sim | Não | Não | Workspace | Não |
+
+Parcial quer dizer que o Codex não tem formato de subagent, e os prompts dele não documentam frontmatter, então só o corpo é aproveitado. Workspace quer dizer que o Hermes lê as regras do projeto, então não há arquivo global para instalar.
 
 ## Regras de trabalho
 
@@ -146,5 +141,7 @@ Qualquer outra ferramenta que leia Agent Skills e `AGENTS.md` recebe as skills e
 O motivo de cada uma está em [docs/authoring.md](docs/authoring.md).
 
 ---
+
+<sub>Qualquer outra ferramenta que leia Agent Skills e `AGENTS.md` pega as skills e as rules sozinha. Basta apontar para `skills/` e para `rules/global.md`. O resto depende do que essa ferramenta suporta.</sub>
 
 <p align="center">Made with ❤️ in Curitiba 🌳 ☔️</p>

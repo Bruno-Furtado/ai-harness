@@ -18,6 +18,7 @@ This repository contains portable configuration for coding agents. Keep the port
 - A skill is a noun phrase for the capability. An agent is `<scope>-<role>`, never a bare role, and an agent owned by a skill takes that skill's name as its scope. A command is either the name of the skill it opens or `<verb>-<object>`. Hooks and repository scripts are `<verb>-<object>`.
 - A command that opens a skill stays thin: description, `$ARGUMENTS` contract, what to deliver, and the skill's name. The procedure lives in `SKILL.md` only.
 - Adding or renaming an artifact requires a line in `docs/catalog.json` in both languages, then `python3 scripts/build-catalog.py` to regenerate the README catalog.
+- Where an artifact lands, per tool, lives in `targets.json` alone. The installer and the Integration table in both READMEs both read it, so never edit that table by hand.
 - Every agent, command and skill must state scope, non-goals, acceptance criteria and validation steps.
 - Every agent, command and skill keeps `name` and `description` portable, and states any restriction in the body too, because frontmatter keys only apply in the tool that defines them.
 - Do not pin a model in a committed artifact. The model is a choice of whoever installs it.
@@ -29,7 +30,8 @@ This repository contains portable configuration for coding agents. Keep the port
 
 - Never commit secrets, credentials, private paths or personal data.
 - Do not add a hook that executes arbitrary input without validation.
-- Do not change existing user configuration during sync.
+- Do not change existing user configuration during an install. An occupied path is a conflict to report, never something to overwrite.
+- Remove only what the installer put there. A path that no longer matches what was installed belongs to the user.
 - Prefer a dry run before any installation or destructive action.
 
 ## Verification
@@ -37,14 +39,15 @@ This repository contains portable configuration for coding agents. Keep the port
 Run these checks before opening a pull request:
 
 ```bash
-for file in sync.sh hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
-python3 -m compileall -q skills scripts
+for file in hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
+python3 -m compileall -q ai_harness skills scripts
 python3 scripts/build-catalog.py --check
-./sync.sh --dry-run
-./sync.sh --check
+HOME=$(mktemp -d) ./harness install --yes --dry-run
 ```
 
 `bash -n` only parses its first argument, so always check one file per call.
+
+Never point the installer at your real `HOME` while testing it. A throwaway `HOME` is the difference between a failed test and a config directory you have to repair by hand.
 
 Review the diff and test any adapter in the tool it targets.
 
@@ -62,9 +65,11 @@ Use the existing labels first: `bug`, `enhancement`, `documentation`, `ci`. A pu
 
 ## Releases
 
-Versions follow semantic versioning. Patch for a fix that breaks no install, minor for a new artifact or a newly supported tool, major for anything that breaks an existing install, such as moving where an artifact lives or renaming something `sync.sh` links.
+Versions follow semantic versioning. Patch for a fix that breaks no install, minor for a new artifact or a newly supported tool, major for anything that breaks an existing install, such as moving where an artifact lives or renaming something `harness` installs.
 
-Every `v*` tag becomes a release. Pushing the tag is the only manual step:
+The version lives in `ai_harness/__init__.py`, and the release workflow refuses a tag that disagrees with it. Bump it in the same pull request as the change it ships.
+
+Every `v*` tag becomes a release, and the same workflow publishes `ai-harness-cli` to PyPI. Pushing the tag is the only manual step:
 
 ```bash
 git tag v0.1.0

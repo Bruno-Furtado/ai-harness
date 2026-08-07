@@ -2,6 +2,18 @@
 
 Contributions are welcome through pull requests.
 
+## Working from a clone
+
+The README covers installing the published artifacts. To write your own, or to change the ones here, work from a checkout instead:
+
+```bash
+git clone https://github.com/Bruno-Furtado/ai-harness.git
+cd ai-harness
+./harness
+```
+
+Run from a clone the installer symlinks rather than copies, so an edit here reaches every tool immediately and a `git pull` updates all of them at once. That is what makes a checkout the right place to author an artifact.
+
 ## Before opening a pull request
 
 1. Create a branch from `main`.
@@ -23,6 +35,8 @@ Contributions are welcome through pull requests.
 
 Tool-specific behavior goes in `adapters/`. Never add provider tokens, pinned models or machine-specific paths. [docs/authoring.md](docs/authoring.md) has the fields each format accepts and how to validate the result.
 
+Adding a tool, or changing where an artifact lands, is an edit to `targets.json` and nothing else. The installer and the Integration table in both READMEs read that file, so the two can never disagree.
+
 ## Pull requests
 
 Pull requests must explain the problem, the proposed change, acceptance criteria and verification performed. Do not merge directly to `main` except for an emergency correction by the repository owner.
@@ -37,9 +51,13 @@ Versions follow [Semantic Versioning](https://semver.org):
 - **Minor** for a new artifact or a newly supported tool.
 - **Major** for a change that breaks an existing install.
 
-Push the tag when the milestone is done, and the `Release` workflow publishes the notes:
+The version lives in `ai_harness/__init__.py`. Bump it in the pull request that ships the change, because the release workflow rejects a tag that disagrees with it.
+
+Push the tag when the milestone is done. The `Release` workflow publishes the notes and the `ai-harness-cli` package:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.3.0
+git push origin v0.3.0
 ```
+
+Publishing to PyPI uses Trusted Publishing, so no token is stored in this repository: PyPI verifies the workflow's OIDC identity instead. It needs a one-time setup on PyPI, linking the project to this repository and the `pypi` environment. Until that exists the release still runs, and only the publish step fails.

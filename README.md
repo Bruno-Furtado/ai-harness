@@ -4,10 +4,11 @@
   <img src="./.github/assets/banner.svg" alt="ai-harness">
 </p>
 
-<h3 align="center">Tool agnostic agents, skills, commands, hooks and rules, in one place</h3>
+<h3 align="center">Write an agent, a skill, a command, a hook or a rule once.<br>One command installs it into every AI tool you use.</h3>
 
 <p align="center">
   <a href="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml"><img src="https://github.com/Bruno-Furtado/ai-harness/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://pypi.org/project/ai-harness-cli/"><img src="https://img.shields.io/pypi/v/ai-harness-cli?color=3B82F6&style=flat" alt="PyPI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-22C55E?style=flat" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/standard-agentskills.io-3B82F6?style=flat" alt="Agent Skills">
   <img src="https://img.shields.io/badge/standard-AGENTS.md-3B82F6?style=flat" alt="AGENTS.md">
@@ -26,104 +27,24 @@ Write an agent, a skill, a command, a hook or a rule once and use it in every to
 
 ## Install
 
-```bash
-git clone https://github.com/Bruno-Furtado/ai-harness.git
-cd ai-harness
-
-./sync.sh --dry-run   # preview every change, nothing is written
-./sync.sh             # link the artifacts into each tool
-./sync.sh --check     # audit the links later
-./sync.sh --unlink    # remove only the links that point back here
-```
-
-Want the skills only, without cloning:
+`harness` asks which tools to install into, and which artifacts to bring, then puts them where each tool looks.
 
 ```bash
-npx skills add Bruno-Furtado/ai-harness
+pip install ai-harness-cli
+harness
 ```
 
-## Catalog
+Once installed:
 
-Every artifact in this repository. The table is generated from the files themselves, so it cannot drift.
-
-<!-- catalog:start -->
-
-### Skills
-
-| Name | What it does | How to use it |
-| --- | --- | --- |
-| [dream](skills/dream/SKILL.md) | Reviews the day's sessions and proposes memory changes, one evidence-cited item at a time. | `/dream`, then `/dream apply 1,3` |
-| [news-digest](skills/news-digest/SKILL.md) | Builds a personal digest from your own feeds, with dedupe memory and a second-model check. | `/news-digest [sections]` |
-| [task-delegation](skills/task-delegation/SKILL.md) | Hands a task to OpenCode, which runs it on the best model available for that tier. | Ask for it, or let the tool trigger it |
-| [topic-research](skills/topic-research/SKILL.md) | Collects what people said about a topic across several sources and reports it with citations. | `/topic-research <topic>` |
-
-### Agents
-
-| Name | What it does | How to use it |
-| --- | --- | --- |
-| [code-reviewer](agents/code-reviewer.md) | Reviews a change and reports risks, regressions and missing tests. Never edits files. | `/review-changes`, or delegate to it by name |
-| [news-digest-validator](agents/news-digest-validator.md) | Checks a digest selection for duplicates, obvious stories and weak translations before delivery. | Called by the `news-digest` skill |
-| [proposal-validator](agents/proposal-validator.md) | Gives a second opinion on a plan, a change or a report, on a different model. Read-only. | `/validate-proposal`, or delegate to it by name |
-
-### Commands
-
-| Name | What it does | How to use it |
-| --- | --- | --- |
-| [dream](commands/dream.md) | Runs the dream memory routine, or applies, lists and dismisses its proposals. | `/dream`, `/dream apply all`, `/dream list` |
-| [news-digest](commands/news-digest.md) | Builds the news digest and delivers it as one short message. | `/news-digest [sections]` |
-| [review-changes](commands/review-changes.md) | Reviews the current git changes for correctness, security and missing tests. | `/review-changes` |
-| [topic-research](commands/topic-research.md) | Researches a topic and writes a report where every claim cites a collected item. | `/topic-research <topic>` |
-| [validate-proposal](commands/validate-proposal.md) | Sends the current plan, change or report for an independent second opinion. | `/validate-proposal` |
-
-### Hooks
-
-| Name | What it does | How to use it |
-| --- | --- | --- |
-| [protect-secrets](hooks/protect-secrets.sh) | Blocks tool calls that reference .env, credential, secret, certificate or key files. | Wired once per tool, see Integration |
-
-### Rules
-
-| Name | What it does | How to use it |
-| --- | --- | --- |
-| [global](rules/global.md) | Standing rules for every project: working style, validation, safety and communication. | Linked as the global `AGENTS.md` |
-
-<!-- catalog:end -->
-
-## Integration
-
-`sync.sh` creates one symlink per artifact, so an edit here reaches every tool at once. This is where each one lands:
-
-| Artifact | Claude Code | OpenCode | Codex | Hermes |
-| --- | --- | --- | --- | --- |
-| `skills/<name>/` | `~/.claude/skills/` | `~/.config/opencode/skills/` | `~/.agents/skills/` | `~/.hermes/skills/` |
-| `agents/<name>.md` | `~/.claude/agents/` | `~/.config/opencode/agents/` | Not supported | Not supported |
-| `commands/<name>.md` | `~/.claude/commands/` | `~/.config/opencode/commands/` | `~/.codex/prompts/` | Not supported |
-| `rules/global.md` | `~/.claude/CLAUDE.md` | `~/.config/opencode/AGENTS.md` | `~/.codex/AGENTS.md` | Workspace rules |
-
-Then invoke an artifact by the name in the catalog: `/news-digest` as a command, `code-reviewer` as a subagent, and a skill by asking for what it does.
-
-Hooks are the exception, because a hook is executable code and no tool accepts one by symlink alone. Wire it once per tool:
-
-| Tool | How |
-| --- | --- |
-| Claude Code | Paste [adapters/claude/settings.snippet.json](adapters/claude/settings.snippet.json) into `~/.claude/settings.json`, replacing the placeholder with the absolute path of this clone |
-| Codex | Same, using [adapters/codex/hooks.json](adapters/codex/hooks.json) |
-| OpenCode | Already done. `sync.sh` links [the plugin](adapters/opencode/plugins/harness-hooks.ts), which calls the same script |
-
-Any other tool that reads Agent Skills and `AGENTS.md` picks up the skills and the rules on its own. Point it at `skills/` and at `rules/global.md`.
-
-## Tool support
-
-| Tool | Skills | Agents | Commands | Rules | Hooks | Notes |
-| --- | :---: | :---: | :---: | :---: | :---: | --- |
-| OpenCode | Yes | Yes | Yes | Yes | Adapter | Hooks arrive through a plugin |
-| Claude Code | Yes | Yes | Yes | Yes | Yes | |
-| Codex | Yes | Partial | Partial | Yes | Yes | No subagent format, and prompts document no frontmatter, so only the body carries over |
-| Hermes | Yes | No | No | Yes | No | Consumes skills and workspace rules only |
-
-> Any other tool that reads Agent Skills and `AGENTS.md` gets the skills and the rules. The rest depends on what that tool supports.
+```bash
+harness update   # bring the latest artifacts and reconcile
+harness check    # audit what is installed
+harness remove   # take back only what harness installed
+```
 
 ## Contents
+
+The map of the repository, for writing an artifact or finding where a piece lives.
 
 | Path | What lives there |
 | --- | --- |
@@ -134,8 +55,82 @@ Any other tool that reads Agent Skills and `AGENTS.md` picks up the skills and t
 | `rules/` | Global rules, linked as `AGENTS.md` |
 | `adapters/` | What each tool needs to wire the rest up |
 | `docs/` | How to author an artifact and how the pieces fit together |
+| `harness`, `ai_harness/` | The installer |
+| `targets.json` | Where every artifact lands, per tool |
 | `CONTRIBUTING.md` | How to propose a change and how releases are cut |
-| `sync.sh` | Links everything into the tools you use |
+
+## Catalog
+
+What you get once it is installed.
+
+<!-- catalog:start -->
+
+### Skills
+
+| Name | What it does |
+| --- | --- |
+| [dream](skills/dream/SKILL.md) | Reads the day's sessions and suggests what is worth remembering, like the fact that you prefer Postgres. |
+| [news-digest](skills/news-digest/SKILL.md) | Reads your feeds and delivers the day's news as one short message, skipping what you already saw. |
+| [task-delegation](skills/task-delegation/SKILL.md) | Hands a heavy task to OpenCode so it runs on the strongest model you have available. |
+| [topic-research](skills/topic-research/SKILL.md) | Researches a topic across Hacker News, Reddit and GitHub, with a link behind every claim. |
+
+### Agents
+
+| Name | What it does |
+| --- | --- |
+| [code-reviewer](agents/code-reviewer.md) | Reads your diff and points out bugs, security risks and missing tests. Changes nothing. |
+| [news-digest-validator](agents/news-digest-validator.md) | Checks the digest before it reaches you and cuts repeated, obvious or badly translated stories. |
+| [proposal-validator](agents/proposal-validator.md) | Sends your plan to a different model, to catch what the first one talked itself into. |
+
+### Commands
+
+| Name | What it does |
+| --- | --- |
+| [dream](commands/dream.md) | Runs dream and applies the suggestions you approve, one by one. |
+| [news-digest](commands/news-digest.md) | Asks for today's digest right now. |
+| [review-changes](commands/review-changes.md) | Reviews what you changed, before you open the pull request. |
+| [topic-research](commands/topic-research.md) | Researches a topic and writes a report you can check, since every claim cites its source. |
+| [validate-proposal](commands/validate-proposal.md) | Sends the plan on the table for an independent second opinion. |
+
+### Hooks
+
+| Name | What it does |
+| --- | --- |
+| [protect-secrets](hooks/protect-secrets.sh) | Stops the agent from opening .env, key and certificate files, even when you ask by accident. |
+
+### Rules
+
+| Name | What it does |
+| --- | --- |
+| [global](rules/global.md) | Tells the agent how to work everywhere: ask when unsure, show evidence before claiming it is done. |
+
+<!-- catalog:end -->
+
+## Integration
+
+This is where each artifact lands.
+
+<!-- integration:start -->
+
+| Artifact | Claude Code | OpenCode | Codex | Hermes |
+| --- | --- | --- | --- | --- |
+| `skills/<name>/` | `~/.claude/skills` | `~/.config/opencode/skills` | `~/.agents/skills` | `~/.hermes/skills` |
+| `agents/<name>.md` | `~/.claude/agents` | `~/.config/opencode/agents` | Not supported | Not supported |
+| `commands/<name>.md` | `~/.claude/commands` | `~/.config/opencode/commands` | `~/.codex/prompts` | Not supported |
+| `rules/global.md` | `~/.claude/CLAUDE.md` | `~/.config/opencode/AGENTS.md` | `~/.codex/AGENTS.md` | Not supported |
+
+<!-- integration:end -->
+
+## Tool support
+
+| Tool | Skills | Agents | Commands | Rules | Hooks |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| OpenCode | Yes | Yes | Yes | Yes | Adapter |
+| Claude Code | Yes | Yes | Yes | Yes | Yes |
+| Codex | Yes | Partial | Partial | Yes | Yes |
+| Hermes | Yes | No | No | Workspace | No |
+
+Partial means Codex has no subagent format, and its prompts document no frontmatter, so only the body carries over. Workspace means Hermes reads rules from the project, so there is no global file to install.
 
 ## Design rules
 
@@ -146,5 +141,7 @@ Any other tool that reads Agent Skills and `AGENTS.md` picks up the skills and t
 The reasoning behind each one is in [docs/authoring.md](docs/authoring.md).
 
 ---
+
+<sub>Any other tool that reads Agent Skills and `AGENTS.md` picks up the skills and the rules on its own. Point it at `skills/` and at `rules/global.md`. The rest depends on what that tool supports.</sub>
 
 <p align="center">Made with ❤️ in Curitiba 🌳 ☔️</p>
