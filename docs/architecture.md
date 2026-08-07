@@ -14,7 +14,7 @@ OpenCode, Claude Code and Codex can consume `AGENTS.md` and Agent Skills, but th
 
 ## Cross-model validation
 
-The validator is read-only and does not pin a model. It should run on a different model from the one that produced the proposal. This is a review aid, not a guarantee of correctness.
+The `proposal-validator` agent is read-only and does not pin a model. It should run on a different model from the one that produced the proposal. This is a review aid, not a guarantee of correctness.
 
 ## Security boundary
 

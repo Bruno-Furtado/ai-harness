@@ -82,7 +82,7 @@ python3 scripts/collect.py --plan "$PLAN" --compact
 6. Judge what the evidence supports, following `references/synthesis-rules.md`. Drop the promotional items and the reposts. Cluster the items that describe the same event.
 7. Write the synthesis with `[id]` markers and no urls, then pipe it into `python3 scripts/archive.py render --topic "<topic>"`. It resolves the markers into numbered references, appends the source status, saves the report and updates the index. Deliver its stdout.
 8. State plainly which sources were degraded or off, and what that leaves unanswered. This belongs in the delivered report, not in a side comment.
-9. When the topic matters, ask for a second opinion with `/cross-review` on the report and the shortlist.
+9. When the topic matters, ask for a second opinion with `/validate-proposal` on the report and the shortlist.
 
 ## Output contract
 

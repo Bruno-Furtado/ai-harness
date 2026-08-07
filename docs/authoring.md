@@ -13,6 +13,25 @@ Agents, commands and hooks have no open standard. Each tool defines its own fron
 
 Prefer a skill whenever the content is instructions or a procedure. Reach for an agent or a command only when you need the tool's own delegation or menu.
 
+## Naming
+
+A name is the only handle a user has on an artifact, and in most tools it is also part of what decides whether the artifact gets loaded at all. Every name here is lowercase ASCII, digits and single hyphens, no leading or trailing hyphen, at most three words. The file or folder name is the name, and when the frontmatter has `name`, it must be identical.
+
+| Type | Location | Rule | Example |
+| --- | --- | --- | --- |
+| Skill | `skills/<name>/SKILL.md` | Noun phrase for the capability, never an imperative verb | `news-digest`, `dream`, `task-delegation` |
+| Agent | `agents/<scope>-<role>.md` | Always two parts. The role is a job noun (`reviewer`, `validator`) | `code-reviewer`, `proposal-validator` |
+| Agent owned by a skill | `agents/<skill>-<role>.md` | The scope is the exact name of the owning skill | `news-digest-validator` |
+| Command that opens a skill | `commands/<skill>.md` | The same name as the skill | `news-digest`, `dream` |
+| Command that drives an agent | `commands/<verb>-<object>.md` | Imperative | `review-changes`, `validate-proposal` |
+| Hook | `hooks/<verb>-<object>.sh` | Imperative | `protect-secrets.sh` |
+| Rule | `rules/<scope>.md` | Noun for the scope | `global.md` |
+| Repository script | `scripts/<verb>-<object>.py` | Imperative | `build-catalog.py` |
+
+A role on its own, such as `validator` or `reviewer`, is not allowed: it collides with the built-in agents most tools ship, and the user cannot tell which one they got. A command that opens a skill takes the skill's name so the two are obviously the same thing, which is also why the pairing costs nothing to remember.
+
+The `Check artifact naming` step in CI enforces all of this. Renaming an artifact breaks an existing install, so it is a major version, and whoever renames runs `./sync.sh --unlink` before the rename, not after: `--unlink` walks the names that exist now, so a link whose source name is gone is never visited and stays dangling.
+
 ## Design rules
 
 The three lines in the README expand into this.
@@ -79,6 +98,10 @@ Location: `commands/<name>.md`. The file name becomes the command name. Start fr
 
 `description` is the only key worth keeping in the portable file. The body is the prompt, and both OpenCode and Claude Code expand `$ARGUMENTS` and the positional `$1`, `$2` placeholders.
 
+A command that opens a skill stays thin: the description, the `$ARGUMENTS` contract, what to deliver, and a line naming the skill. The procedure lives in `SKILL.md` and nowhere else. Two copies of the same procedure drift, and the copy in the command is the one nobody rereads. Because a tool may load the command without loading the skill, the command names the skill explicitly and says to stop and report rather than improvise the procedure.
+
+A command that drives an agent is different: its body is the prompt, so it carries the acceptance criteria itself.
+
 | Key | Tool |
 | --- | --- |
 | `agent`, `subtask`, `model` | OpenCode |
@@ -104,12 +127,17 @@ Rules are standing instructions that apply to every project, so keep them short 
 
 ```bash
 for file in sync.sh hooks/*.sh docs/templates/hook.sh; do bash -n "$file"; done
+python3 -m compileall -q skills scripts
+python3 scripts/build-catalog.py
 ./sync.sh --dry-run
 ./sync.sh --check
 ```
 
+A new artifact needs its line in [catalog.json](catalog.json), in both languages, before `build-catalog.py` will run. That is deliberate: it is what keeps the README catalog complete without anyone remembering to update two files by hand.
+
 Then confirm:
 
+- The artifact name follows the naming table above.
 - The artifact states scope, non goals, acceptance criteria and validation.
 - Acceptance criteria were defined before the implementation, not after.
 - The behavior was tested in at least one tool that will actually load it.

@@ -33,7 +33,51 @@ jobs:
           set -euo pipefail
           # Skill scripts ship as source and run on whatever python3 the host
           # has, so a syntax error only shows up when someone runs the skill.
-          python3 -m compileall -q skills
+          python3 -m compileall -q skills scripts
+
+      - name: Check artifact naming
+        shell: bash
+        run: |
+          set -euo pipefail
+          kebab='^[a-z0-9]+(-[a-z0-9]+)*$'
+          failures=0
+
+          fail() { printf '%s\n' "$1" >&2; failures=1; }
+
+          # The folder name is the skill name, per agentskills.io.
+          for dir in skills/*/; do
+            name=$(basename "$dir")
+            [[ "$name" =~ $kebab ]] || fail "skill folder is not kebab-case: $name"
+            grep -Fxq "name: $name" "$dir/SKILL.md" || fail "skills/$name/SKILL.md: name must be '$name'"
+          done
+
+          # An agent is <scope>-<role>. A bare role collides with tool built-ins.
+          for file in agents/*.md; do
+            name=$(basename "$file" .md)
+            [[ "$name" =~ $kebab ]] || fail "agent file is not kebab-case: $name"
+            [[ "$name" == *-* ]] || fail "agents/$name.md: needs a scope, '<scope>-<role>'"
+            grep -Fxq "name: $name" "$file" || fail "agents/$name.md: name must be '$name'"
+          done
+
+          # A command is either the name of the skill it opens, or <verb>-<object>.
+          for file in commands/*.md; do
+            name=$(basename "$file" .md)
+            [[ "$name" =~ $kebab ]] || fail "command file is not kebab-case: $name"
+            if [[ ! -d "skills/$name" && "$name" != *-* ]]; then
+              fail "commands/$name.md: name a skill, or use '<verb>-<object>'"
+            fi
+          done
+
+          for file in hooks/*.sh scripts/*.py rules/*.md; do
+            name=$(basename "$file"); name=${name%.*}
+            [[ "$name" =~ $kebab ]] || fail "file is not kebab-case: $file"
+          done
+
+          test "$failures" -eq 0
+
+      - name: Check catalog is up to date
+        shell: bash
+        run: python3 scripts/build-catalog.py --check
 
       - name: Validate frontmatter
         shell: bash

@@ -1,5 +1,5 @@
 ---
-name: delegate
+name: task-delegation
 description: Delegate a task to OpenCode running on the best available model for it. Use when a request would benefit from a strong reasoning model, when the current tool's own model is too weak or has no credits, or generally to hand a non-trivial task to OpenCode instead of doing it in the current tool.
 license: MIT
 compatibility: Optimal in Hermes; works wherever a shell can spawn `opencode-model-run`.
@@ -7,7 +7,7 @@ metadata:
   audience: personal
 ---
 
-# Delegate to OpenCode
+# Task Delegation
 
 Hands a task to OpenCode, which runs it on the best available model for the task's tier: a paid model first, falling back to the next paid model and finally to a free model when the paid provider reports exhausted credits. OpenCode prints the completed result on stdout.
 
@@ -21,7 +21,7 @@ Hands a task to OpenCode, which runs it on the best available model for the task
 
 - Trivial replies, greetings, or yes/no questions: answer directly.
 - Inside OpenCode itself: recursing would spawn another OpenCode. Run the work directly instead.
-- A confirm-this-skill's-own-flow case where the delegate skill is not relevant.
+- A confirm-this-skill's-own-flow case where the task-delegation skill is not relevant.
 
 ## Steps
 

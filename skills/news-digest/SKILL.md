@@ -105,7 +105,7 @@ The cost of this skill is dominated by what crosses the model boundary, so keep 
 3. Read `profile.md` and `config.yaml` from the state home. `digest_language` decides the language of every delivered item.
 4. Rank and select following `references/curation-criteria.md`: drop obvious and repeated stories, dedupe across outlets, prefer the user's profile. Respect `max_per_section` and the global `max_items`.
 5. Write the selection lines per the output contract, translating each headline into `digest_language`. Sources in any language are equally welcome; the source language is never a reason to keep or drop a candidate.
-6. When `validate` is true in `config.yaml`, send the selection lines and the compact shortlist to the `news-validator` agent or an equivalent second-model pass. Send nothing else. Apply the findings to the selection lines before rendering.
+6. When `validate` is true in `config.yaml`, send the selection lines and the compact shortlist to the `news-digest-validator` agent or an equivalent second-model pass. Send nothing else. Apply the findings to the selection lines before rendering.
 7. Render and deliver: pipe the final selection lines into `python3 scripts/render_digest.py --format brief`. It prints the message to deliver, writes `digests/YYYY-MM-DD.md` and records `.last_digest.json`. Deliver its stdout as-is, with no preamble and no process note around it.
 8. Run `python3 scripts/state.py mark-shown --from-last` so nothing repeats tomorrow.
 9. On feedback ("+2 -1", "more of X", "stop showing Y"): run `state.py feedback --from-last "<the reply verbatim>"`, then `state.py compact-profile --write`. Confirm the change in one short line.
@@ -124,7 +124,7 @@ Either way, a feed enters only after `fetch_feeds.py --check` reports it reachab
 
 ## Cross-model validation
 
-The selection pass and the validation pass must run on different models. This skill pins no model: configure the second model in the tool you use, for example the `news-validator` agent model in the tool's local configuration. Agreement from the same model is not validation, and if you cannot guarantee a different model, say so explicitly to the user, outside the delivered message.
+The selection pass and the validation pass must run on different models. This skill pins no model: configure the second model in the tool you use, for example the `news-digest-validator` agent model in the tool's local configuration. Agreement from the same model is not validation, and if you cannot guarantee a different model, say so explicitly to the user, outside the delivered message.
 
 ## Acceptance criteria
 
