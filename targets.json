@@ -1,0 +1,99 @@
+{
+  "_comment": "Where each artifact lands, per tool. Single source of truth: the harness CLI installs from this file, and scripts/build-catalog.py renders the Integration table in both READMEs from it. Paths are relative to the user's home. Editing a path here changes the installer and the docs at once.",
+  "artifacts": [
+    {
+      "id": "skills",
+      "source": "skills",
+      "kind": "dir",
+      "label": "Skills",
+      "doc": "skills/<name>/"
+    },
+    {
+      "id": "agents",
+      "source": "agents",
+      "kind": "dir",
+      "label": "Agents",
+      "doc": "agents/<name>.md"
+    },
+    {
+      "id": "commands",
+      "source": "commands",
+      "kind": "dir",
+      "label": "Commands",
+      "doc": "commands/<name>.md"
+    },
+    {
+      "id": "rules",
+      "source": "rules/global.md",
+      "kind": "file",
+      "label": "Rules",
+      "doc": "rules/global.md"
+    },
+    {
+      "id": "hooks",
+      "source": "hooks",
+      "kind": "hooks",
+      "label": "Hooks",
+      "doc": "hooks/<name>.sh",
+      "table": false
+    }
+  ],
+  "tools": [
+    {
+      "id": "claude",
+      "label": "Claude Code",
+      "config_dir": ".claude",
+      "hooks": "snippet",
+      "install": {
+        "skills": ".claude/skills",
+        "agents": ".claude/agents",
+        "commands": ".claude/commands",
+        "rules": ".claude/CLAUDE.md"
+      }
+    },
+    {
+      "id": "opencode",
+      "label": "OpenCode",
+      "config_dir": ".config/opencode",
+      "hooks": "plugin",
+      "install": {
+        "skills": ".config/opencode/skills",
+        "agents": ".config/opencode/agents",
+        "commands": ".config/opencode/commands",
+        "rules": ".config/opencode/AGENTS.md"
+      },
+      "extra": [
+        {
+          "source": "adapters/opencode/plugins",
+          "kind": "dir",
+          "target": ".config/opencode/plugins",
+          "reason": "the hook plugin, which OpenCode loads on its own"
+        }
+      ]
+    },
+    {
+      "id": "codex",
+      "label": "Codex",
+      "config_dir": ".codex",
+      "hooks": "snippet",
+      "install": {
+        "skills": ".agents/skills",
+        "commands": ".codex/prompts",
+        "rules": ".codex/AGENTS.md"
+      }
+    },
+    {
+      "id": "hermes",
+      "label": "Hermes",
+      "config_dir": ".hermes",
+      "hooks": "none",
+      "install": {
+        "skills": ".hermes/skills"
+      }
+    }
+  ],
+  "unsupported": {
+    "en": "Not supported",
+    "pt": "Não suportado"
+  }
+}

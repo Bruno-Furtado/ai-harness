@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-harness-cli"
+dynamic = ["version"]
+description = "Install tool agnostic agents, skills, commands, hooks and rules into every AI tool you use"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "Bruno Tortato Furtado" }]
+keywords = ["agent-skills", "agents", "claude-code", "codex", "opencode"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Code Generators",
+]
+# No runtime dependencies, on purpose: it is what makes pip install instant
+# and what lets the CLI run on whatever python3 the host already has.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Bruno-Furtado/ai-harness"
+Source = "https://github.com/Bruno-Furtado/ai-harness"
+Issues = "https://github.com/Bruno-Furtado/ai-harness/issues"
+
+[project.scripts]
+harness = "ai_harness.main:main"
+
+[tool.hatch.version]
+path = "ai_harness/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ai_harness"]
+
+# The artifacts live at the repository root, where a clone reads them straight.
+# The wheel carries a copy under the package, and source.py picks whichever of
+# the two it finds.
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "ai_harness/_artifacts/skills"
+"agents" = "ai_harness/_artifacts/agents"
+"commands" = "ai_harness/_artifacts/commands"
+"hooks" = "ai_harness/_artifacts/hooks"
+"rules" = "ai_harness/_artifacts/rules"
+"adapters" = "ai_harness/_artifacts/adapters"
+"targets.json" = "ai_harness/_artifacts/targets.json"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "ai_harness",
+  "skills",
+  "agents",
+  "commands",
+  "hooks",
+  "rules",
+  "adapters",
+  "docs",
+  "targets.json",
+  "harness",
+  "README.md",
+  "LICENSE",
+]

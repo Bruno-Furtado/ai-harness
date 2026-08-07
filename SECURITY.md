@@ -12,4 +12,4 @@ A hook is executable code that runs on every matching tool call.
 
 - Review a hook before enabling it, in the tool that will run it.
 - Keep it small, make it fail closed and never log the payload.
-- Test sync changes with `./sync.sh --dry-run` before applying them.
+- Test installer changes with `HOME=$(mktemp -d) ./harness install --yes --dry-run` before applying them.

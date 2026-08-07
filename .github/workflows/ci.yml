@@ -22,7 +22,7 @@ jobs:
         run: |
           set -euo pipefail
           # bash -n only parses its first argument, so check one file per call.
-          for file in sync.sh hooks/*.sh docs/templates/hook.sh; do
+          for file in hooks/*.sh docs/templates/hook.sh; do
             test -f "$file"
             bash -n "$file"
           done
@@ -33,7 +33,23 @@ jobs:
           set -euo pipefail
           # Skill scripts ship as source and run on whatever python3 the host
           # has, so a syntax error only shows up when someone runs the skill.
-          python3 -m compileall -q skills scripts
+          python3 -m compileall -q ai_harness skills scripts
+          python3 -m py_compile harness
+
+      - name: Check the installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          # A throwaway HOME, so the runner's own config is never touched. The
+          # run is non interactive by design: no tty means no prompt, which is
+          # also what makes the CLI usable from a script.
+          export HOME
+          HOME=$(mktemp -d)
+          ./harness install --yes --dry-run < /dev/null
+          ./harness install --yes --tools claude --artifacts skills
+          ./harness check
+          ./harness remove
+          test -z "$(ls -A "$HOME/.claude/skills" 2>/dev/null)"
 
       - name: Check artifact naming
         shell: bash
@@ -68,6 +84,9 @@ jobs:
             fi
           done
 
+          # ai_harness/ is out of this rule on purpose: a Python package name
+          # cannot contain a hyphen, so the underscore is the language's call,
+          # not a naming slip.
           for file in hooks/*.sh scripts/*.py rules/*.md; do
             name=$(basename "$file"); name=${name%.*}
             [[ "$name" =~ $kebab ]] || fail "file is not kebab-case: $file"
@@ -91,6 +110,17 @@ jobs:
           for file in agents/*.md docs/templates/SKILL.md docs/templates/agent.md; do
             grep -Eq '^name: [a-z0-9]+(-[a-z0-9]+)*$' "$file"
           done
+
+      - name: Build the package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet --upgrade build twine
+          python3 -m build --wheel
+          python3 -m twine check dist/*
+          # The artifacts have to reach the wheel, or a pip install would give
+          # someone a CLI with nothing to install.
+          python3 -m zipfile -l dist/*.whl | grep -q "ai_harness/_artifacts/targets.json"
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master

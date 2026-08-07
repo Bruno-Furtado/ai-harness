@@ -11,10 +11,41 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Trusted Publishing needs an environment and the id-token permission. No
+    # PyPI token is stored anywhere: PyPI verifies the OIDC identity of this
+    # workflow instead.
+    environment: pypi
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Check the tag matches the package version
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # A tag that disagrees with ai_harness/__init__.py would publish a
+          # wheel whose version nobody can trace back to a commit.
+          version=$(python3 -c "import re,pathlib;print(re.search(r'__version__ = \"([^\"]+)\"', pathlib.Path('ai_harness/__init__.py').read_text()).group(1))")
+          if [[ "$TAG" != "v$version" ]]; then
+            echo "::error::Tag $TAG does not match __version__ $version."
+            exit 1
+          fi
+
+      - name: Build the package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet --upgrade build
+          python3 -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Publish the release
         shell: bash
